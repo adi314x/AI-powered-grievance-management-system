@@ -1,0 +1,215 @@
+/**
+ * Aadhaar-Inspired Professional Background
+ * Clean, government-standard design
+ */
+
+/* Remove old backgrounds */
+body::before,
+body::after {
+    display: none !important;
+}
+
+/* Clean, professional background inspired by Aadhaar portal */
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Subtle pattern overlay - Aadhaar style */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
+    background-size: 50px 50px;
+    opacity: 0.3;
+    z-index: -1;
+    display: block !important;
+}
+
+/* Government emblem style decorative elements */
+.govt-emblem-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Ashoka Chakra inspired circular pattern */
+.govt-emblem-bg::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 153, 51, 0.03) 0%, transparent 70%);
+    animation: rotate 60s linear infinite;
+}
+
+.govt-emblem-bg::after {
+    content: '';
+    position: absolute;
+    bottom: -200px;
+    left: -200px;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(19, 136, 8, 0.03) 0%, transparent 70%);
+    animation: rotate 60s linear infinite reverse;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Tricolor accent bar - Government of India style */
+.tricolor-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, 
+        #FF9933 0%, #FF9933 33.33%, 
+        #FFFFFF 33.33%, #FFFFFF 66.66%, 
+        #138808 66.66%, #138808 100%);
+    z-index: 10000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Clean card styling - Aadhaar portal style */
+.card {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Header - Government portal style */
+.header {
+    background: white !important;
+    border-bottom: 3px solid #FF9933 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Government of India branding */
+.govt-branding {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.govt-emblem {
+    width: 50px;
+    height: 50px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23003DA5" opacity="0.1"/><circle cx="50" cy="50" r="35" fill="%23FF9933" opacity="0.2"/><circle cx="50" cy="50" r="25" fill="%23138808" opacity="0.2"/></svg>') center/contain no-repeat;
+}
+
+/* India flag colors for accents */
+.accent-saffron { color: #FF9933; }
+.accent-green { color: #138808; }
+.accent-blue { color: #003DA5; }
+
+/* Professional button styling */
+.btn-primary {
+    background: linear-gradient(135deg, #003DA5 0%, #0056b3 100%) !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 61, 165, 0.3) !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #003DA5 100%) !important;
+    box-shadow: 0 4px 12px rgba(0, 61, 165, 0.4) !important;
+}
+
+/* Remove department showcase elements for cleaner look */
+.department-showcase,
+.department-icons-bg,
+.dept-of-day {
+    display: none !important;
+}
+
+/* Clean, professional container */
+.container {
+    background: transparent;
+}
+
+/* Aadhaar-style info boxes */
+.info-box {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    border-left: 4px solid #003DA5;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+/* Government portal footer style */
+.footer-govt {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 2px solid #dee2e6;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #6c757d;
+    z-index: 1000;
+}
+
+/* Digital India branding */
+.digital-india-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #003DA5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .govt-emblem-bg::before,
+    .govt-emblem-bg::after {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body::before,
+    .govt-emblem-bg,
+    .tricolor-bar,
+    .footer-govt {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+}

@@ -1,0 +1,616 @@
+/* 🇮🇳 Pan-India Smart Grievance System - Colorful Theme */
+
+:root {
+    /* Indian Tricolor Palette */
+    --saffron: #FF9933;
+    --white: #FFFFFF;
+    --green: #138808;
+    --navy-blue: #000080;
+    --ashoka-blue: #003DA5;
+    
+    /* Sector-Specific Colors */
+    --education-primary: #FF9933;
+    --education-secondary: #FFD700;
+    --healthcare-primary: #27AE60;
+    --healthcare-secondary: #58D68D;
+    --government-primary: #003DA5;
+    --government-secondary: #FFD700;
+    --utilities-primary: #1E90FF;
+    --utilities-secondary: #FFD700;
+    --police-primary: #8B0000;
+    --police-secondary: #FF6347;
+    --transport-primary: #FF6B35;
+    --transport-secondary: #FFA500;
+    
+    /* UI Colors */
+    --text-dark: #1F2937;
+    --text-light: #6B7280;
+    --border-light: #E5E7EB;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background: linear-gradient(135deg, 
+        rgba(255, 153, 51, 0.05) 0%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(19, 136, 8, 0.05) 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Decorative Background Patterns */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 153, 51, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(19, 136, 8, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 61, 165, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Rangoli Pattern Overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,153,51,0.05)"/><circle cx="25" cy="25" r="1" fill="rgba(19,136,8,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(0,61,165,0.05)"/></svg>');
+    background-size: 100px 100px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Header with Tricolor Theme */
+.header {
+    background: linear-gradient(135deg, 
+        var(--saffron) 0%, 
+        var(--saffron) 33%, 
+        var(--white) 33%, 
+        var(--white) 66%, 
+        var(--green) 66%, 
+        var(--green) 100%);
+    padding: 3px 0;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-main {
+    background: linear-gradient(135deg, var(--ashoka-blue) 0%, #003366 100%);
+    padding: 1.2rem 0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header h1::before {
+    content: '🇮🇳';
+    font-size: 2rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Language Selector with Indian Flag Colors */
+.language-selector {
+    background: white;
+    border: 2px solid var(--saffron);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: var(--ashoka-blue);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.language-selector:hover {
+    background: var(--saffron);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* User Info Badge */
+.user-info {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    color: white;
+    font-weight: 500;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Buttons with Indian Theme */
+.btn {
+    padding: 0.7rem 1.8rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--saffron) 0%, var(--green) 100%);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--ashoka-blue);
+    border: 2px solid var(--ashoka-blue);
+}
+
+.btn-secondary:hover {
+    background: var(--ashoka-blue);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+    color: white;
+}
+
+/* Cards with Sector-Specific Themes */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: var(--shadow-md);
+    border-left: 6px solid var(--saffron);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, 
+        rgba(255, 153, 51, 0.05) 0%, 
+        transparent 100%);
+    border-radius: 0 0 0 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Sector-Specific Card Styles */
+.card.water-supply {
+    border-left-color: #1E90FF;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.03) 0%, white 100%);
+}
+
+.card.electricity {
+    border-left-color: #FFD700;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, white 100%);
+}
+
+.card.sanitation {
+    border-left-color: #27AE60;
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.03) 0%, white 100%);
+}
+
+.card.roads {
+    border-left-color: #FF6B35;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.03) 0%, white 100%);
+}
+
+.card.police {
+    border-left-color: #8B0000;
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.03) 0%, white 100%);
+}
+
+.card.education {
+    border-left-color: #FF9933;
+    background: linear-gradient(135deg, rgba(255, 153, 51, 0.03) 0%, white 100%);
+}
+
+.card.healthcare {
+    border-left-color: #27AE60;
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.03) 0%, white 100%);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Form Elements with Indian Theme */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 2px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--saffron);
+    box-shadow: 0 0 0 4px rgba(255, 153, 51, 0.1);
+    background: rgba(255, 153, 51, 0.02);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Status Badges with Indian Colors */
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-received {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+}
+
+.status-assigned {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+}
+
+.status-progress {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.status-investigation {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.status-reviewed {
+    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+    color: white;
+}
+
+.status-resolved {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.status-closed {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+}
+
+/* Timeline with Indian Theme */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, 
+        var(--saffron) 0%, 
+        var(--white) 50%, 
+        var(--green) 100%);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 4px solid var(--saffron);
+    box-shadow: 0 0 0 4px rgba(255, 153, 51, 0.2);
+}
+
+.timeline-item.active::before {
+    background: var(--saffron);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(255, 153, 51, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(255, 153, 51, 0.1);
+    }
+}
+
+.timeline-content {
+    background: white;
+    padding: 1.2rem;
+    border-radius: 12px;
+    border-left: 3px solid var(--saffron);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(5px);
+}
+
+/* Department Icons */
+.department-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.dept-water { background: linear-gradient(135deg, #1E90FF 0%, #4DA6FF 100%); }
+.dept-electricity { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+.dept-sanitation { background: linear-gradient(135deg, #27AE60 0%, #58D68D 100%); }
+.dept-roads { background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%); }
+.dept-police { background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%); }
+.dept-education { background: linear-gradient(135deg, #FF9933 0%, #FFB366 100%); }
+.dept-healthcare { background: linear-gradient(135deg, #27AE60 0%, #58D68D 100%); }
+
+/* Comments Section with Colorful Theme */
+.comment {
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--ashoka-blue);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.comment:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(3px);
+}
+
+.comment.citizen {
+    border-left-color: var(--saffron);
+    background: linear-gradient(135deg, rgba(255, 153, 51, 0.02) 0%, white 100%);
+}
+
+.comment.officer {
+    border-left-color: var(--green);
+    background: linear-gradient(135deg, rgba(19, 136, 8, 0.02) 0%, white 100%);
+}
+
+/* Alert Messages with Indian Colors */
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    border-left: 5px solid;
+    box-shadow: var(--shadow-sm);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, white 100%);
+    border-left-color: #10B981;
+    color: #065F46;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, white 100%);
+    border-left-color: #EF4444;
+    color: #991B1B;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, white 100%);
+    border-left-color: #F59E0B;
+    color: #92400E;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, white 100%);
+    border-left-color: #3B82F6;
+    color: #1E40AF;
+}
+
+/* Footer with Tricolor */
+.footer {
+    background: linear-gradient(135deg, 
+        rgba(255, 153, 51, 0.1) 0%, 
+        rgba(255, 255, 255, 0.95) 50%, 
+        rgba(19, 136, 8, 0.1) 100%);
+    border-top: 4px solid;
+    border-image: linear-gradient(90deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%) 1;
+    padding: 2rem 0;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.footer p {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* Loading Spinner with Indian Colors */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 153, 51, 0.2);
+    border-top-color: var(--saffron);
+    border-right-color: var(--white);
+    border-bottom-color: var(--green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header, .footer, .btn {
+        display: none;
+    }
+    
+    .card {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}

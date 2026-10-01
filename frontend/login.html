@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css?v=20260416a">
+    <link rel="stylesheet" href="government-portal-theme.css?v=20260416a">
+    <link rel="stylesheet" href="improved-contrast.css?v=20260416a">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f6f7fb;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .login-bg-base {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(circle at 8% 15%, rgba(255, 153, 51, 0.35) 0%, transparent 42%),
+                radial-gradient(circle at 88% 78%, rgba(19, 136, 8, 0.30) 0%, transparent 42%),
+                radial-gradient(circle at 52% 12%, rgba(0, 61, 165, 0.22) 0%, transparent 36%),
+                linear-gradient(135deg, #fff7ec 0%, #f8fbff 50%, #eefdf4 100%);
+        }
+
+        .login-bg-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                radial-gradient(circle at 16% 28%, rgba(255, 153, 51, 0.20) 0%, transparent 34%),
+                radial-gradient(circle at 82% 68%, rgba(19, 136, 8, 0.18) 0%, transparent 34%),
+                radial-gradient(circle at 52% 48%, rgba(0, 61, 165, 0.14) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        /* Tricolor Top Border */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                #FF9933 0%, #FF9933 33%, 
+                #FFFFFF 33%, #FFFFFF 66%, 
+                #138808 66%, #138808 100%);
+            z-index: 1000;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 153, 51, 0.1);
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #003DA5 0%, #001F52 100%);
+            padding: 30px 30px 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .login-header::before {
+            content: '🇮🇳';
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .login-header h1 {
+            color: white;
+            font-size: 1.6rem;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+        }
+
+        .login-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .login-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1F2937;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FF9933;
+            box-shadow: 0 0 0 4px rgba(255, 153, 51, 0.1);
+            background: rgba(255, 153, 51, 0.02);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-login:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 153, 51, 0.3);
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+
+        .auth-link a {
+            color: #FF9933;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .auth-link a:hover {
+            color: #138808;
+            text-decoration: underline;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, white 100%);
+            border-left: 4px solid #10B981;
+            color: #065F46;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, white 100%);
+            border-left: 4px solid #EF4444;
+            color: #991B1B;
+        }
+
+        /* Loading Spinner */
+        .btn-login.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 15px;
+            }
+
+            .login-header {
+                padding: 25px 20px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 1.4rem;
+            }
+
+            .login-body {
+                padding: 25px 20px;
+            }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="login-bg-base" aria-hidden="true"></div>
+    <div class="login-bg-overlay" aria-hidden="true"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1 data-translate="app_name">Smart Grievance System</h1>
+                <p data-translate="secure_login_portal">Secure Login Portal</p>
+            </div>
+
+            <div class="login-body">
+                <div id="alertContainer"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="email" data-translate="email_address">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input" 
+                            data-translate="enter_email"
+                            placeholder="Enter your email"
+                            required
+                            autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password" data-translate="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            data-translate="enter_password"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn" data-translate="login">
+                        Login
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin: 1rem 0;">
+                    <a href="forgot-password.html" style="color: #003DA5; text-decoration: none; font-size: 14px;" data-translate="forgot_password">
+                        🔒 Forgot Password?
+                    </a>
+                </div>
+
+                <div class="auth-link">
+                    <span data-translate="dont_have_account">Don't have an account?</span> <a href="register.html" data-translate="register_here">Register here</a>
+                </div>
+                <div style="text-align: center; margin-top: 0.5rem;">
+                    <a href="public-dashboard.html" style="color: #64748b; font-size: 13px;" data-translate="view_public_statistics">📊 View Public Statistics</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} show">
+                    ${message}
+                </div>
+            `;
+
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                }
+            }, 5000);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Add loading state
+            loginBtn.classList.add('loading');
+            loginBtn.textContent = '';
+
+            try {
+                const data = await apiCall('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+
+                // Store token and user
+                setToken(data.token);
+                if (data.refresh_token) {
+                    setRefreshToken(data.refresh_token);
+                }
+                setUser(data.user);
+
+                showAlert('✅ Login successful! Redirecting...', 'success');
+
+                // Redirect based on role
+                setTimeout(() => {
+                    if (data.user.role === 'ADMIN') {
+                        window.location.href = 'admin.html';
+                    } else if (data.user.role === 'OFFICER') {
+                        window.location.href = 'officer.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1000);
+
+            } catch (error) {
+                loginBtn.classList.remove('loading');
+                loginBtn.textContent = 'Login';
+                showAlert('❌ ' + error.message, 'error');
+            }
+        });
+
+    </script>
+    <script src="language-config.js"></script>
+    <script src="translations.js"></script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+</body>
+</html>

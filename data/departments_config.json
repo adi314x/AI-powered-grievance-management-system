@@ -1,0 +1,62 @@
+{
+  "Roads and Public Works": [
+    "Potholes on road",
+    "Road damage after rain or flood",
+    "Road sinking or cave-in",
+    "Speed breaker damaged or unmarked",
+    "Road markings or zebra crossing faded",
+    "Footpath or pedestrian walkway broken",
+    "Construction debris left on road",
+    "Incomplete road construction or repair work",
+    "Damaged bridge or culvert",
+    "Encroachment on public road or walkway"
+  ],
+  "Water Supply": [
+    "No water supply",
+    "Low water pressure",
+    "Water pipeline leakage or burst",
+    "Dirty or contaminated drinking water",
+    "Water meter not working or damaged",
+    "Water billing discrepancy or overcharge",
+    "New water connection request delayed",
+    "Emergency water tanker request",
+    "Borewell or public tap malfunction"
+  ],
+  "Electricity": [
+    "Power outage or blackout",
+    "Frequent power interruptions or load shedding",
+    "Voltage fluctuation damaging appliances",
+    "Transformer malfunction or sparking",
+    "Low-hanging electric cables or exposed wires",
+    "Streetlights not functioning or flickering",
+    "Streetlight pole damaged or tilted",
+    "Electricity meter faulty or burned",
+    "Electricity billing overcharge issue",
+    "New electricity connection request"
+  ],
+  "Sanitation and Waste Management": [
+    "Garbage not collected from bins",
+    "Illegal garbage dumping in public area",
+    "Door-to-door waste collection missed",
+    "Dead animal carcass disposal required",
+    "Public area sweeping and cleaning required",
+    "Mosquito fogging and pest control request",
+    "Open waste burning complaint",
+    "Drain overflow or sewage stagnation",
+    "Blocked sewer line or manhole",
+    "Damaged or missing manhole cover",
+    "Public toilet cleaning and maintenance"
+  ],
+  "Education": [
+    "Teacher absenteeism or shortage in school",
+    "School building repair or infrastructure defect",
+    "Classroom lacking basic amenities (fans, desks, lights)",
+    "Scholarship disbursement delay",
+    "Examination marks or result discrepancy",
+    "Delay in issuance of marksheet or certificate",
+    "Mid-day meal quality or supply issue",
+    "School drinking water and sanitation issue",
+    "Student safety, harassment or bullying complaint",
+    "School bus or student transportation grievance"
+  ]
+}

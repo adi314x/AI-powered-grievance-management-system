@@ -1,0 +1,20 @@
+# GitHub Actions - Deploy to Render on push to main
+# Requires: Add RENDER_DEPLOY_HOOK_URL as GitHub secret (from Render Dashboard)
+name: Deploy to Render
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+            echo "Deploy triggered successfully"
+          else
+            echo "RENDER_DEPLOY_HOOK_URL not set - skip deploy"
+          fi

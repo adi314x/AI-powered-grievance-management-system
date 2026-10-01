@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <style>
+        .profile-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #003DA5 0%, #001F52 100%);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 153, 51, 0.1);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .profile-header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .profile-avatar span {
+            z-index: 1;
+            position: relative;
+        }
+
+        .upload-photo-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #FF9933;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-photo-btn:hover {
+            background: #138808;
+            transform: scale(1.1);
+        }
+
+        .upload-photo-btn input {
+            display: none;
+        }
+
+        .profile-info h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.8rem;
+        }
+
+        .profile-role {
+            display: inline-block;
+            padding: 6px 15px;
+            background: rgba(255, 153, 51, 0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-section h2 {
+            font-size: 1.3rem;
+            color: #1F2937;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FF9933;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.03) 0%, white 100%);
+            border-radius: 10px;
+            border-left: 3px solid #FF9933;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #6B7280;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #1F2937;
+            font-weight: 500;
+        }
+
+        .info-value input,
+        .info-value select,
+        .info-value textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge.verified {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+
+        .badge.pending {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-edit, .btn-save {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover, .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 153, 51, 0.3);
+        }
+
+        .btn-cancel, .btn-back {
+            padding: 12px 25px;
+            background: white;
+            color: #003DA5;
+            border: 2px solid #003DA5;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover, .btn-back:hover {
+            background: #003DA5;
+            color: white;
+        }
+
+        /* View mode - show display values, hide inputs */
+        .view-mode .info-value.display {
+            display: block;
+        }
+
+        .view-mode .info-value.edit {
+            display: none;
+        }
+
+        /* Edit mode - hide display values, show inputs */
+        .edit-mode .info-value.display {
+            display: none;
+        }
+
+        .edit-mode .info-value.edit {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="department-backgrounds.css">
+    <style>
+        /* ── Shared Navbar (matches index-page.css) ─────────────── */
+        .gov-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f4c75 100%);
+            color: white;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid #f97316;
+        }
+        .gov-header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .gov-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .gov-logo-img {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+        }
+        .gov-title h1 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            color: white;
+        }
+        .gov-title p {
+            font-size: 10px;
+            opacity: 0.75;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .gov-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            justify-content: center;
+        }
+        .gov-nav-link {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .gov-nav-link:hover,
+        .gov-nav-link.active {
+            background: rgba(249,115,22,0.18);
+            color: #fed7aa;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .user-welcome {
+            font-size: 13px;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+            white-space: nowrap;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .btn-danger-outline {
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            background: transparent;
+            color: #fca5a5;
+            border: 1.5px solid rgba(252,165,165,0.55);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-danger-outline:hover {
+            background: rgba(239,68,68,0.18);
+            color: white;
+            border-color: #fca5a5;
+        }
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 28px;
+            height: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+        }
+        .nav-hamburger span {
+            display: block;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+        }
+        .gov-nav-mobile {
+            display: none;
+            flex-direction: column;
+            background: #1e293b;
+            padding: 8px 0 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .gov-nav-mobile .gov-nav-link {
+            padding: 12px 24px;
+            border-radius: 0;
+            font-size: 14px;
+            text-align: left;
+            width: 100%;
+        }
+        .logout-mobile { color: #fca5a5 !important; }
+        .gov-nav-mobile.open { display: flex; }
+        @media (max-width: 900px) {
+            .gov-nav { display: none; }
+            .header-actions { display: none; }
+            .nav-hamburger { display: flex; }
+        }
+    </style>
+</head>
+<body>
+    <header class="gov-header">
+        <div class="gov-header-content">
+
+            <!-- Left: Logo + Title -->
+            <div class="gov-logo-section">
+                <img src="logo.svg" alt="Smart Grievance System Logo" class="gov-logo-img">
+                <div class="gov-title">
+                    <h1>Smart Grievance System</h1>
+                    <p>Government of India &nbsp;|&nbsp; Digital India Initiative</p>
+                </div>
+            </div>
+
+            <!-- Centre: Nav links -->
+            <nav class="gov-nav" aria-label="Main navigation">
+                <a href="index.html" class="gov-nav-link">🏠 Home</a>
+                <a href="track.html" class="gov-nav-link">🔍 Track Grievance</a>
+                <a href="public-dashboard.html" class="gov-nav-link">📊 Dashboard</a>
+                <a href="profile.html" class="gov-nav-link active">👤 My Profile</a>
+            </nav>
+
+            <!-- Right: User info + logout -->
+            <div class="header-actions">
+                <span id="userInfo" class="user-welcome"></span>
+                <button id="logoutBtn" class="btn btn-danger-outline">⏻ Logout</button>
+            </div>
+
+            <!-- Mobile hamburger -->
+            <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <!-- Mobile nav drawer -->
+        <nav class="gov-nav-mobile" id="mobileNav" aria-label="Mobile navigation">
+            <a href="index.html" class="gov-nav-link">🏠 Home</a>
+            <a href="track.html" class="gov-nav-link">🔍 Track Grievance</a>
+            <a href="public-dashboard.html" class="gov-nav-link">📊 Dashboard</a>
+            <a href="profile.html" class="gov-nav-link active">👤 My Profile</a>
+            <hr style="border-color:rgba(255,255,255,0.2); margin: 4px 16px;">
+            <button id="logoutBtnMobile" class="gov-nav-link logout-mobile">⏻ Logout</button>
+        </nav>
+    </header>
+
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-header-content">
+                <div class="profile-avatar-container">
+                    <div class="profile-avatar" id="avatar">
+                        <span id="avatarText"></span>
+                        <img id="avatarImg" style="display: none;">
+                    </div>
+                    <label class="upload-photo-btn" title="Upload Photo">
+                        📷
+                        <input type="file" id="photoUpload" accept="image/*">
+                    </label>
+                </div>
+                <div class="profile-info">
+                    <h1 id="userName">Loading...</h1>
+                    <div class="profile-role" id="userRole"></div>
+                    <div class="profile-email" id="userEmail"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="info-section view-mode" id="personalSection">
+            <h2 data-translate="personal_information">📋 Personal Information</h2>
+            <div class="info-grid" id="personalInfo">
+                <div class="info-item">
+                    <div class="info-label" data-translate="first_name">First Name</div>
+                    <div class="info-value display" id="firstNameDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="text" id="firstNameInput" data-translate="enter_first_name" placeholder="First name">
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="last_name">Last Name</div>
+                    <div class="info-value display" id="lastNameDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="text" id="lastNameInput" data-translate="enter_last_name" placeholder="Last name">
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="email_address">Email Address</div>
+                    <div class="info-value display" id="emailDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="email" id="emailInput" disabled style="background: #f3f4f6; cursor: not-allowed;" title="Email cannot be changed. Contact admin if needed.">
+                        <small style="color: #6b7280; display: block; margin-top: 5px;" data-translate="email_no_change">Email cannot be changed</small>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="phone_number">Phone Number</div>
+                    <div class="info-value display" id="phoneDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="tel" id="phoneInput" disabled style="background: #f3f4f6; cursor: not-allowed;" title="Phone cannot be changed. Contact admin if needed.">
+                        <small style="color: #6b7280; display: block; margin-top: 5px;" data-translate="phone_no_change">Phone cannot be changed. Contact admin if needed.</small>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="date_of_birth">Date of Birth</div>
+                    <div class="info-value display" id="dobDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="date" id="dobInput">
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><span data-translate="gender">Gender</span> <span style="color: #ef4444;">*</span></div>
+                    <div class="info-value display" id="genderDisplay"></div>
+                    <div class="info-value edit">
+                        <select id="genderInput" class="form-input">
+                            <option value="" data-translate="select_gender">-- Select Gender --</option>
+                            <option value="Male" data-translate="male">Male / पुरुष</option>
+                            <option value="Female" data-translate="female">Female / महिला</option>
+                            <option value="Other" data-translate="other_gender">Other / अन्य</option>
+                            <option value="Prefer not to say" data-translate="prefer_not_to_say">Prefer not to say / नहीं बताना चाहते</option>
+                        </select>
+                        <small style="color: #6B7280; display: block; margin-top: 0.25rem;" data-translate="accepted_gender_values">Accepted values: Male, Female, Other, Prefer not to say</small>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="aadhaar_optional">Aadhaar (Last 4 digits)</div>
+                    <div class="info-value display" id="aadhaarDisplay"></div>
+                    <div class="info-value edit">
+                        <input type="text" id="aadhaarInput" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Residential Address (Permanent Address as per Aadhaar) -->
+        <div class="info-section view-mode" id="residentialAddressSection">
+            <h2 data-translate="residential_address_heading">🏠 Residential Address (As per Aadhaar)</h2>
+            
+            <!-- Important Notice Banner -->
+            
+            <div class="info-grid">
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label" data-translate="full_address">Full Residential Address</div>
+                    <div class="info-value display" id="residentialAddressDisplay" data-translate="not_provided">Not provided</div>
+                    <div class="info-value edit">
+                        <textarea id="residentialAddressInput" rows="2" data-translate="enter_full_address" placeholder="House/Flat No, Building Name, Street, Area, Landmark"></textarea>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="city">City</div>
+                    <div class="info-value display" id="residentialCityDisplay" data-translate="not_provided">Not provided</div>
+                    <div class="info-value edit">
+                        <input type="text" id="residentialCityInput" data-translate="enter_city" placeholder="Your city">
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="state">State</div>
+                    <div class="info-value display" id="residentialStateDisplay" data-translate="not_provided">Not provided</div>
+                    <div class="info-value edit">
+                        <select id="residentialStateInput">
+                            <option value="">Select State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                            <option value="Chandigarh">Chandigarh</option>
+                            <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                            <option value="Ladakh">Ladakh</option>
+                            <option value="Lakshadweep">Lakshadweep</option>
+                            <option value="Puducherry">Puducherry</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-translate="pincode">PIN Code</div>
+                    <div class="info-value display" id="residentialPincodeDisplay" data-translate="not_provided">Not provided</div>
+                    <div class="info-value edit">
+                        <input type="text" id="residentialPincodeInput" maxlength="6" pattern="[0-9]{6}" data-translate="enter_pincode" placeholder="6-digit PIN">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Details -->
+        <div class="info-section">
+            <h2 data-translate="account_details">🔐 Account Details</h2>
+            <div class="info-grid" id="accountDetails">
+                <!-- Details will be loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-edit" id="editBtn" onclick="toggleEditMode()" data-translate="edit_profile">✏️ Edit Profile</button>
+            <button class="btn-save" id="saveBtn" onclick="saveProfile()" style="display: none;" data-translate="save_changes">💾 Save Changes</button>
+            <button class="btn-cancel" id="cancelBtn" onclick="cancelEdit()" style="display: none;" data-translate="cancel">❌ Cancel</button>
+            <button class="btn-back" onclick="goBack()" data-translate="back_to_dashboard">← Back to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Email Verification Modal -->
+    <div id="emailVerificationModal" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    ">
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        ">
+            <h2 style="margin: 0 0 1rem 0; color: #003DA5; font-size: 1.5rem; text-align: center;">
+                📧 Verify Your Email
+            </h2>
+            
+            <p style="text-align: center; color: #6B7280; margin-bottom: 1.5rem;">
+                We'll send a verification code to<br>
+                <strong id="verificationEmail" style="color: #003DA5;"></strong>
+            </p>
+
+            <div id="otpSendSection">
+                <button onclick="sendVerificationOTP()" id="sendOTPBtn" style="
+                    width: 100%;
+                    padding: 0.75rem;
+                    background: linear-gradient(135deg, #003DA5 0%, #001F52 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    Send Verification Code
+                </button>
+            </div>
+
+            <div id="otpVerifySection" style="display: none;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500;">
+                        Enter 6-Digit OTP
+                    </label>
+                    <input type="text" id="otpInput" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="
+                        width: 100%;
+                        padding: 0.75rem;
+                        border: 2px solid #D1D5DB;
+                        border-radius: 8px;
+                        font-size: 1.5rem;
+                        text-align: center;
+                        letter-spacing: 0.5rem;
+                        font-weight: 600;
+                    ">
+                    <small style="display: block; margin-top: 0.5rem; color: #6B7280; text-align: center;">
+                        Code expires in <span id="otpTimer" style="color: #EF4444; font-weight: 600;">5:00</span>
+                    </small>
+                </div>
+
+                <button onclick="verifyEmailOTP()" id="verifyOTPBtn" style="
+                    width: 100%;
+                    padding: 0.75rem;
+                    background: #10B981;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-bottom: 0.5rem;
+                    transition: all 0.2s;
+                ">
+                    Verify Code
+                </button>
+
+                <button onclick="sendVerificationOTP()" style="
+                    width: 100%;
+                    padding: 0.5rem;
+                    background: transparent;
+                    color: #003DA5;
+                    border: 1px solid #003DA5;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    Resend Code
+                </button>
+            </div>
+
+            <button onclick="closeVerificationModal()" style="
+                width: 100%;
+                padding: 0.5rem;
+                background: transparent;
+                color: #6B7280;
+                border: none;
+                margin-top: 1rem;
+                cursor: pointer;
+                font-size: 0.9rem;
+            " data-translate="cancel">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="translations.js"></script>
+    <script>
+        let currentUser = null;
+        let isEditMode = false;
+
+        async function loadProfile() {
+            try {
+                // Fetch latest user data from API
+                const userData = await apiCall('/auth/me');
+                currentUser = userData.user;
+                
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Officers use officer-profile.html
+                if (currentUser.role === 'OFFICER') {
+                    window.location.href = 'officer-profile.html';
+                    return;
+                }
+
+                // Update header user info
+                document.getElementById('userInfo').textContent = currentUser.name;
+
+                // Set avatar
+                if (currentUser.profile_photo) {
+                    document.getElementById('avatarImg').src = currentUser.profile_photo;
+                    document.getElementById('avatarImg').style.display = 'block';
+                    document.getElementById('avatarText').style.display = 'none';
+                } else {
+                    // Show gender-based emoji avatar
+                    let avatarEmoji = '👤'; // Default
+                    if (currentUser.gender) {
+                        const gender = currentUser.gender.toLowerCase();
+                        if (gender === 'male' || gender.includes('male')) {
+                            avatarEmoji = '👨';
+                        } else if (gender === 'female' || gender.includes('female')) {
+                            avatarEmoji = '👩';
+                        } else if (gender === 'transgender') {
+                            avatarEmoji = '🧑';
+                        } else {
+                            avatarEmoji = '🧑';
+                        }
+                    }
+                    document.getElementById('avatarText').textContent = avatarEmoji;
+                    document.getElementById('avatarText').style.fontSize = '4rem'; // Larger emoji
+                    document.getElementById('avatarText').style.display = 'flex';
+                    document.getElementById('avatarText').style.alignItems = 'center';
+                    document.getElementById('avatarText').style.justifyContent = 'center';
+                    document.getElementById('avatarImg').style.display = 'none';
+                }
+
+                // Set basic info
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role;
+                document.getElementById('userEmail').textContent = currentUser.email;
+
+                // Load personal information
+                loadPersonalInfo();
+
+                // Load account details
+                loadAccountDetails();
+
+                // Check if DOB or Gender is missing and show warning
+                checkMissingInfo();
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showAlert('Error loading profile', 'error');
+            }
+        }
+
+        function checkMissingInfo() {
+            const missingFields = [];
+            
+            if (!currentUser.date_of_birth) {
+                missingFields.push('Date of Birth');
+            }
+            
+            if (!currentUser.gender) {
+                missingFields.push('Gender');
+            }
+
+            if (missingFields.length > 0) {
+                // Show warning banner
+                const warningBanner = document.createElement('div');
+                warningBanner.style.cssText = `
+                    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+                    border: 2px solid #F59E0B;
+                    border-radius: 12px;
+                    padding: 1rem 1.5rem;
+                    margin-bottom: 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);
+                `;
+                
+                warningBanner.innerHTML = `
+                    <div style="font-size: 2rem;">⚠️</div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 0.5rem 0; color: #92400E; font-size: 1.1rem; font-weight: 600;" data-translate="complete_profile">
+                            Complete Your Profile
+                        </h3>
+                        <p style="margin: 0; color: #78350F; font-size: 0.95rem;" data-translate="complete_profile_desc">
+                            Please add your missing information to complete your profile. This is required for submitting grievances.
+                        </p>
+                    </div>
+                    <button onclick="toggleEditMode()" style="
+                        background: #F59E0B;
+                        color: white;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        white-space: nowrap;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.background='#D97706'" onmouseout="this.style.background='#F59E0B'" data-translate="update_now">
+                        Update Now
+                    </button>
+                `;
+                
+                // Insert at the top of profile container
+                const profileContainer = document.querySelector('.profile-container');
+                profileContainer.insertBefore(warningBanner, profileContainer.firstChild);
+
+                // Re-apply translations for the new banner
+                if (typeof applyTranslations === 'function') {
+                    applyTranslations();
+                }
+            }
+        }
+
+        function loadPersonalInfo() {
+            // Split name into first and last
+            const nameParts = (currentUser.name || '').trim().split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            // Display mode
+            document.getElementById('firstNameDisplay').textContent = firstName || 'Not provided';
+            document.getElementById('lastNameDisplay').textContent = lastName || 'Not provided';
+            document.getElementById('emailDisplay').textContent = currentUser.email;
+            document.getElementById('phoneDisplay').textContent = currentUser.phone || 'Not provided';
+            document.getElementById('dobDisplay').textContent = currentUser.date_of_birth || 'Not provided';
+            document.getElementById('genderDisplay').textContent = currentUser.gender || 'Not provided';
+            document.getElementById('aadhaarDisplay').textContent = currentUser.aadhaar_last4 ? `XXXX-XXXX-${currentUser.aadhaar_last4}` : 'Not provided';
+            
+            // Residential address (permanent)
+            document.getElementById('residentialAddressDisplay').textContent = currentUser.residential_address || 'Not provided';
+            document.getElementById('residentialCityDisplay').textContent = currentUser.residential_city || 'Not provided';
+            document.getElementById('residentialStateDisplay').textContent = currentUser.residential_state || 'Not provided';
+            document.getElementById('residentialPincodeDisplay').textContent = currentUser.residential_pincode || 'Not provided';
+
+            // Edit mode
+            document.getElementById('firstNameInput').value = firstName;
+            document.getElementById('lastNameInput').value = lastName;
+            document.getElementById('emailInput').value = currentUser.email || '';
+            document.getElementById('phoneInput').value = currentUser.phone || '';
+            document.getElementById('dobInput').value = currentUser.date_of_birth || '';
+            document.getElementById('genderInput').value = currentUser.gender || '';
+            document.getElementById('aadhaarInput').value = currentUser.aadhaar_last4 ? `XXXX-XXXX-${currentUser.aadhaar_last4}` : '';
+            
+            // Residential address
+            document.getElementById('residentialAddressInput').value = currentUser.residential_address || '';
+            document.getElementById('residentialCityInput').value = currentUser.residential_city || '';
+            document.getElementById('residentialStateInput').value = currentUser.residential_state || '';
+            document.getElementById('residentialPincodeInput').value = currentUser.residential_pincode || '';
+        }
+
+        function loadAccountDetails() {
+            const accountDetails = document.getElementById('accountDetails');
+            const emailVerified = currentUser.email_verified;
+            const phoneVerified = currentUser.phone_verified;
+            const createdDate = new Date(currentUser.created_at).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            accountDetails.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">Account Type</div>
+                    <div class="info-value">${currentUser.role}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email Status</div>
+                    <div class="info-value">
+                        <span class="badge ${emailVerified ? 'verified' : 'pending'}">
+                            ${emailVerified ? '✓ Verified' : '⏳ Pending'}
+                        </span>
+                        ${!emailVerified ? `
+                            <button onclick="startEmailVerification()" style="
+                                margin-left: 0.5rem;
+                                padding: 0.4rem 1rem;
+                                background: #10B981;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 0.85rem;
+                                font-weight: 600;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                                📧 Verify Email
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Phone Status</div>
+                    <div class="info-value">
+                        <span class="badge ${phoneVerified ? 'verified' : 'pending'}">
+                            ${phoneVerified ? '✓ Verified' : '⏳ Pending'}
+                        </span>
+                        ${!phoneVerified ? `
+                            <button onclick="verifyPhone()" style="
+                                margin-left: 10px;
+                                padding: 8px 16px;
+                                background: #10B981;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                font-weight: 600;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                                📱 Verify Phone
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Member Since</div>
+                    <div class="info-value">${createdDate}</div>
+                </div>
+            `;
+        }
+
+        // Photo upload
+        document.getElementById('photoUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('Image size should be less than 2MB', 'error');
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showAlert('Please upload an image file', 'error');
+                return;
+            }
+
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64Image = event.target.result;
+                
+                try {
+                    // Update profile photo
+                    const data = await apiCall('/auth/profile/update', {
+                        method: 'PUT',
+                        body: JSON.stringify({ profile_photo: base64Image })
+                    });
+
+                    // Update UI
+                    document.getElementById('avatarImg').src = base64Image;
+                    document.getElementById('avatarImg').style.display = 'block';
+                    document.getElementById('avatarText').style.display = 'none';
+                    
+                    // Update stored user data
+                    currentUser = data.user;
+                    setUser(currentUser);
+
+                    showAlert('Profile photo updated successfully!', 'success');
+                } catch (error) {
+                    showAlert('Failed to update photo: ' + error.message, 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function toggleEditMode() {
+            isEditMode = true;
+            const personalSection = document.getElementById('personalSection');
+            const residentialSection = document.getElementById('residentialAddressSection');
+            
+            if (personalSection) {
+                personalSection.classList.remove('view-mode');
+                personalSection.classList.add('edit-mode');
+            }
+            
+            if (residentialSection) {
+                residentialSection.classList.remove('view-mode');
+                residentialSection.classList.add('edit-mode');
+            }
+            
+            document.getElementById('editBtn').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+        }
+
+        function cancelEdit() {
+            isEditMode = false;
+            const personalSection = document.getElementById('personalSection');
+            const residentialSection = document.getElementById('residentialAddressSection');
+            
+            if (personalSection) {
+                personalSection.classList.remove('edit-mode');
+                personalSection.classList.add('view-mode');
+            }
+            
+            if (residentialSection) {
+                residentialSection.classList.remove('edit-mode');
+                residentialSection.classList.add('view-mode');
+            }
+            
+            document.getElementById('editBtn').style.display = 'inline-block';
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+            
+            // Reset values
+            loadPersonalInfo();
+        }
+
+        async function saveProfile() {
+            try {
+                const firstName = document.getElementById('firstNameInput').value.trim();
+                const lastName = document.getElementById('lastNameInput').value.trim();
+                
+                // Validate names
+                if (!firstName) {
+                    showAlert('First name is required', 'error');
+                    return;
+                }
+                
+                if (!lastName) {
+                    showAlert('Last name is required', 'error');
+                    return;
+                }
+                
+                const fullName = `${firstName} ${lastName}`;
+                
+                const updatedData = {
+                    name: fullName,
+                    // Note: phone and email are not editable (require admin)
+                    date_of_birth: document.getElementById('dobInput').value,
+                    gender: document.getElementById('genderInput').value,
+                    // Residential address (permanent)
+                    residential_address: document.getElementById('residentialAddressInput').value,
+                    residential_city: document.getElementById('residentialCityInput').value,
+                    residential_state: document.getElementById('residentialStateInput').value,
+                    residential_pincode: document.getElementById('residentialPincodeInput').value
+                };
+
+                // Validate residential pincode (required)
+                if (updatedData.residential_pincode && !/^\d{6}$/.test(updatedData.residential_pincode)) {
+                    showAlert('Please enter a valid 6-digit residential PIN code', 'error');
+                    return;
+                }
+                
+
+                const data = await apiCall('/auth/profile/update', {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedData)
+                });
+
+                currentUser = data.user;
+                setUser(currentUser);
+                
+                showAlert('Profile updated successfully!', 'success');
+                cancelEdit();
+                loadProfile();
+
+            } catch (error) {
+                showAlert('Failed to update profile: ' + error.message, 'error');
+            }
+        }
+
+        function goBack() {
+            if (currentUser.role === 'ADMIN') {
+                window.location.href = 'admin.html';
+            } else if (currentUser.role === 'OFFICER') {
+                window.location.href = 'officer.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Email Verification Functions
+        let otpTimerInterval = null;
+
+        function startEmailVerification() {
+            document.getElementById('verificationEmail').textContent = currentUser.email;
+            document.getElementById('emailVerificationModal').style.display = 'flex';
+            document.getElementById('otpSendSection').style.display = 'block';
+            document.getElementById('otpVerifySection').style.display = 'none';
+        }
+
+        function closeVerificationModal() {
+            document.getElementById('emailVerificationModal').style.display = 'none';
+            document.getElementById('otpInput').value = '';
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+                otpTimerInterval = null;
+            }
+        }
+
+        async function sendVerificationOTP() {
+            const sendBtn = document.getElementById('sendOTPBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                await apiCall('/auth/send-otp', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        identifier: currentUser.email,
+                        channel: 'email'
+                    })
+                });
+
+                showAlert('✅ Verification code sent to your email!', 'success');
+                
+                // Show OTP input section
+                document.getElementById('otpSendSection').style.display = 'none';
+                document.getElementById('otpVerifySection').style.display = 'block';
+                
+                // Start countdown timer
+                startOTPTimer(300); // 5 minutes
+                
+                // Focus on OTP input
+                document.getElementById('otpInput').focus();
+
+            } catch (error) {
+                showAlert('❌ ' + error.message, 'error');
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Verification Code';
+            }
+        }
+
+        function startOTPTimer(seconds) {
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+
+            let timeLeft = seconds;
+            const timerElement = document.getElementById('otpTimer');
+
+            otpTimerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerElement.textContent = 'Expired';
+                    timerElement.style.color = '#EF4444';
+                }
+
+                timeLeft--;
+            }, 1000);
+        }
+
+        async function verifyEmailOTP() {
+            const otp = document.getElementById('otpInput').value.trim();
+
+            if (!otp || otp.length !== 6) {
+                showAlert('❌ Please enter a valid 6-digit OTP', 'error');
+                return;
+            }
+
+            const verifyBtn = document.getElementById('verifyOTPBtn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                await apiCall('/auth/verify-otp', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        identifier: currentUser.email,
+                        otp: otp,
+                        channel: 'email'
+                    })
+                });
+
+                showAlert('✅ Email verified successfully!', 'success');
+                
+                // Close modal
+                closeVerificationModal();
+                
+                // Reload profile to show updated status
+                setTimeout(() => {
+                    loadProfile();
+                }, 1000);
+
+            } catch (error) {
+                showAlert('❌ ' + error.message, 'error');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Code';
+            }
+        }
+
+        // Auto-format OTP input
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('otpInput');
+            if (otpInput) {
+                otpInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+        });
+
+        // Phone verification function
+        async function verifyPhone() {
+            const currentUser = getUser();
+            if (!currentUser || !currentUser.phone) {
+                showAlert('❌ No phone number found', 'error');
+                return;
+            }
+
+            // Ask for confirmation
+            if (!confirm(`Send OTP to ${currentUser.phone}?`)) {
+                return;
+            }
+
+            try {
+                // Send OTP to phone
+                const response = await apiCall('/auth/send-otp', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        identifier: currentUser.phone,
+                        channel: 'phone'
+                    })
+                });
+
+                showAlert('✅ OTP sent to your phone.', 'success');
+
+                // Prompt for OTP
+                setTimeout(() => {
+                    const otp = prompt('Enter the 6-digit OTP sent to your phone:');
+                    if (otp && otp.length === 6) {
+                        verifyPhoneOTP(currentUser.phone, otp);
+                    }
+                }, 1000);
+
+            } catch (error) {
+                showAlert('❌ Failed to send OTP: ' + error.message, 'error');
+            }
+        }
+
+        async function verifyPhoneOTP(phone, otp) {
+            try {
+                const response = await apiCall('/auth/verify-otp', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        identifier: phone,
+                        otp: otp
+                    })
+                });
+
+                showAlert('✅ Phone verified successfully!', 'success');
+                
+                // Reload profile to update verification status
+                setTimeout(() => {
+                    loadProfile();
+                }, 1000);
+
+            } catch (error) {
+                showAlert('❌ ' + error.message, 'error');
+            }
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            removeToken();
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        // Mobile logout mirrors desktop
+        const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+        if (logoutBtnMobile) {
+            logoutBtnMobile.addEventListener('click', () => {
+                removeToken();
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Hamburger toggle
+        const hamburger = document.getElementById('navHamburger');
+        const mobileNav  = document.getElementById('mobileNav');
+        if (hamburger && mobileNav) {
+            hamburger.addEventListener('click', () => {
+                const isOpen = mobileNav.classList.toggle('open');
+                hamburger.setAttribute('aria-expanded', String(isOpen));
+            });
+        }
+
+        // Load profile on page load
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+</body>
+</html>

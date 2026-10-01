@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <link rel="stylesheet" href="department-backgrounds.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1 data-translate="admin_dashboard">Admin Dashboard</h1>
+            <div class="header-actions">
+                <div class="user-info"></div>
+                <button id="logoutBtn" class="btn btn-secondary" data-translate="logout">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Analytics -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="card-title" style="margin: 0;" data-translate="system_analytics">System Analytics</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="downloadExport('grievances')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="export_excel">📥 Export Excel</button>
+                    <button onclick="downloadExport('audit')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="audit_log">📋 Audit Log</button>
+                </div>
+            </div>
+            <div id="analytics">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Create Officer -->
+        <div class="card">
+            <h2 class="card-title" data-translate="create_new_officer">Create New Officer</h2>
+            
+            <form id="createOfficerForm">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="name" data-translate="full_name">Full Name</label>
+                        <input type="text" id="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email" data-translate="email">Email</label>
+                        <input type="email" id="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone" data-translate="phone">Phone</label>
+                        <input type="tel" id="phone" class="form-input" pattern="[0-9]{10}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="department" data-translate="department">Department</label>
+                        <select id="department" class="form-select" required>
+                            <option value="" data-translate="select_department">Select Department</option>
+                            <option value="Roads and Public Works" data-translate="roads_public_works">Roads and Public Works</option>
+                            <option value="Water Supply" data-translate="water_supply">Water Supply</option>
+                            <option value="Electricity" data-translate="electricity">Electricity</option>
+                            <option value="Sanitation and Waste Management" data-translate="sanitation_waste">Sanitation and Waste Management</option>
+                            <option value="Education" data-translate="education">Education</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password" data-translate="password">Password</label>
+                        <input type="password" id="password" class="form-input" minlength="8" required>
+                        <small style="color: var(--text-secondary);" data-translate="password_hint">Minimum 8 chars with uppercase, lowercase, and number</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success" data-translate="create_officer">Create Officer</button>
+            </form>
+        </div>
+
+        <!-- User Information -->
+        <div class="card">
+            <h2 class="card-title" data-translate="all_users_citizens">👥 All Users (Citizens)</h2>
+            <div id="usersList">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Officers List -->
+        <div class="card">
+            <h2 class="card-title" data-translate="all_officers">👮 All Officers</h2>
+            <div id="officersList">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- All Grievances -->
+        <div class="card">
+            <h2 class="card-title" data-translate="all_grievances">All Grievances</h2>
+            
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <select id="filterStatus" class="form-select" style="max-width: 200px;">
+                    <option value="" data-translate="all_statuses">All Statuses</option>
+                    <option value="Received" data-translate="status_received">Received</option>
+                    <option value="Assigned to Department" data-translate="status_assigned">Assigned to Department</option>
+                    <option value="Under Progress" data-translate="status_under_progress">Under Progress</option>
+                    <option value="Investigation" data-translate="status_investigation">Investigation</option>
+                    <option value="Reviewed" data-translate="status_reviewed">Reviewed</option>
+                    <option value="Resolved" data-translate="status_resolved">Resolved</option>
+                    <option value="Closed" data-translate="status_closed">Closed</option>
+                </select>
+
+                <select id="filterDepartment" class="form-select" style="max-width: 200px;">
+                    <option value="" data-translate="all_departments">All Departments</option>
+                </select>
+
+                <button id="applyFiltersBtn" class="btn btn-primary" data-translate="apply_filters">Apply Filters</button>
+            </div>
+
+            <div id="grievancesList">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="translations.js"></script>
+    <script>
+        if (!checkAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        const user = getUser();
+        
+        async function downloadExport(type) {
+            try {
+                const apiBase = (typeof getApiBaseUrl === 'function')
+                    ? getApiBaseUrl()
+                    : `${window.location.origin}/api`;
+                const url = type === 'audit'
+                    ? `${apiBase}/admin/audit/export?days=7`
+                    : `${apiBase}/admin/export/grievances`;
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + getToken() } });
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = type === 'audit' ? 'audit_log.pdf' : 'grievances_export.xlsx';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            } catch (e) { showAlert('Export failed: ' + e.message, 'error'); }
+        }
+        
+        if (user.role !== 'ADMIN') {
+            showAlert('Access denied. Admins only.', 'error');
+            setTimeout(() => window.location.href = user.role === 'OFFICER' ? 'officer.html' : 'index.html', 2000);
+        }
+
+        // Load analytics
+        async function loadAnalytics() {
+            try {
+                const data = await apiCall('/admin/analytics');
+                
+                const analyticsHtml = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Grievances</div>
+                            <div class="stat-value">${data.total_grievances ?? 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Citizens</div>
+                            <div class="stat-value">${data.total_users ?? 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Officers</div>
+                            <div class="stat-value">${data.total_officers ?? 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg Resolution Time</div>
+                            <div class="stat-value">${data.avg_resolution_time_days ?? 0} days</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">By Status</h3>
+                            ${Object.entries(data.counts_by_status || {}).map(([status, count]) => `
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span>${status}</span>
+                                    <span class="badge ${getStatusBadgeClass(status)}">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">By Department</h3>
+                            ${Object.entries(data.counts_by_department || {}).map(([dept, count]) => `
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span>${dept}</span>
+                                    <span class="badge badge-progress">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('analytics').innerHTML = analyticsHtml;
+            } catch (error) {
+                document.getElementById('analytics').innerHTML = 
+                    `<p class="alert alert-error">${error.message}</p>`;
+            }
+        }
+
+        // Load users (citizens)
+        async function loadUsers() {
+            try {
+                const data = await apiCall('/admin/users');
+                const usersList = document.getElementById('usersList');
+
+                const users = data.users || [];
+                if (users.length === 0) {
+                    usersList.innerHTML = '<p style="color: var(--text-secondary);">No users registered yet.</p>';
+                    return;
+                }
+
+                usersList.innerHTML = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>City/State</th>
+                                    <th>Grievances</th>
+                                    <th>Email Status</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(u => `
+                                    <tr>
+                                        <td>${u.name}</td>
+                                        <td>${u.email}</td>
+                                        <td>${u.phone}</td>
+                                        <td>${u.residential_city || u.city || '-'}, ${u.residential_state || u.state || '-'}</td>
+                                        <td><span class="badge badge-progress">${u.grievance_count}</span></td>
+                                        <td>
+                                            ${u.email_verified 
+                                                ? '<span class="badge badge-success">✓ Verified</span>' 
+                                                : '<span class="badge badge-pending">⏳ Pending</span>'}
+                                        </td>
+                                        <td>${formatDate(u.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = 
+                    `<p class="alert alert-error">${error.message}</p>`;
+            }
+        }
+
+        // Load officers
+        async function loadOfficers() {
+            try {
+                const data = await apiCall('/admin/officers');
+                const officersList = document.getElementById('officersList');
+
+                if (!data.officers || data.officers.length === 0) {
+                    officersList.innerHTML = '<p style="color: var(--text-secondary);">No officers created yet.</p>';
+                    return;
+                }
+
+                // Store for assign-officer dropdown
+                window.officersData = data.officers || [];
+
+                officersList.innerHTML = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Department</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.officers.map(o => `
+                                    <tr>
+                                        <td>${o.name}</td>
+                                        <td>${o.email}</td>
+                                        <td>${o.phone}</td>
+                                        <td><span class="badge badge-progress">${o.department}</span></td>
+                                        <td>${formatDate(o.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('officersList').innerHTML = 
+                    `<p class="alert alert-error">${error.message}</p>`;
+            }
+        }
+
+        // Load departments for filter
+        async function loadDepartments() {
+            try {
+                const data = await apiCall('/admin/departments');
+                const select = document.getElementById('filterDepartment');
+                
+                data.departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept;
+                    option.textContent = dept;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        // Load all grievances
+        async function loadGrievances() {
+            try {
+                const status = document.getElementById('filterStatus').value;
+                const department = document.getElementById('filterDepartment').value;
+                
+                let url = '/admin/all-grievances?';
+                if (status) url += `status=${encodeURIComponent(status)}&`;
+                if (department) url += `department=${encodeURIComponent(department)}`;
+
+                const data = await apiCall(url);
+                const grievancesList = document.getElementById('grievancesList');
+
+                if (!data.grievances || data.grievances.length === 0) {
+                    grievancesList.innerHTML = '<p style="color: var(--text-secondary);">No grievances found.</p>';
+                    return;
+                }
+
+                grievancesList.innerHTML = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Complainant</th>
+                                    <th>Complaint</th>
+                                    <th>Department</th>
+                                    <th>Assigned Officer</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.grievances.map(g => `
+                                    <tr style="cursor: pointer; transition: background 0.2s;" 
+                                        onmouseover="this.style.background='#F9FAFB'" 
+                                        onmouseout="this.style.background='white'">
+                                        <td><strong>#${g.id}</strong></td>
+                                        <td>
+                                            ${g.complainant ? `
+                                                <strong>${g.complainant.name}</strong><br>
+                                                <small style="color: #6B7280;">📧 ${g.complainant.email}</small><br>
+                                                <small style="color: #6B7280;">📞 ${g.complainant.phone}</small>
+                                            ` : '<span style="color: #9CA3AF;">Unknown</span>'}
+                                        </td>
+                                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${escapeHtml(g.complaint_text)}
+                                        </td>
+                                        <td><span class="badge badge-progress">${g.assigned_department}</span></td>
+                                        <td>
+                                            ${g.assigned_officer ? `
+                                                <strong>${g.assigned_officer.name}</strong><br>
+                                                <small style="color: #6B7280;">${g.assigned_officer.designation || 'Officer'}</small>
+                                            ` : '<span style="color: #9CA3AF;">Not Assigned</span>'}
+                                        </td>
+                                        <td>${renderStatusBadge(g.status)}</td>
+                                        <td><small>${formatDate(g.created_at)}</small></td>
+                                        <td>
+                                            <button onclick="showGrievanceDetails(${g.id})" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem; margin-right: 0.5rem;">
+                                                📋 Details
+                                            </button>
+                                            <a href="track.html?id=${g.id}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem; text-decoration: none;">
+                                                👁️ Track
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                // Store grievances data for detail view
+                window.grievancesData = data.grievances;
+            } catch (error) {
+                document.getElementById('grievancesList').innerHTML = 
+                    `<p class="alert alert-error">${error.message}</p>`;
+            }
+        }
+
+        // Create officer
+        document.getElementById('createOfficerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            if (password.length < 8) {
+                showAlert('Password must be at least 8 characters long', 'error');
+                return;
+            }
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasDigit = /\d/.test(password);
+            if (!(hasUpper && hasLower && hasDigit)) {
+                showAlert('Password must include uppercase, lowercase, and a number', 'error');
+                return;
+            }
+
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                department: document.getElementById('department').value,
+                password
+            };
+
+            try {
+                const data = await apiCall('/admin/create-officer', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+
+                showAlert(data.message, 'success');
+                document.getElementById('createOfficerForm').reset();
+                loadOfficers();
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        // Apply filters
+        document.getElementById('applyFiltersBtn').addEventListener('click', loadGrievances);
+
+        // Load data on page load
+        loadAnalytics();
+        loadUsers();
+        loadOfficers();
+        loadDepartments();
+        loadGrievances();
+
+        // Auto-refresh analytics every 60 seconds
+        setInterval(loadAnalytics, 60000);
+        // Show detailed grievance information modal
+        function showGrievanceDetails(grievanceId) {
+            const grievance = window.grievancesData.find(g => g.id === grievanceId);
+            if (!grievance) {
+                alert('Grievance not found');
+                return;
+            }
+            
+            const modal = document.getElementById('detailsModal');
+            const content = document.getElementById('detailsContent');
+            
+            content.innerHTML = `
+                <div style="max-height: 70vh; overflow-y: auto; padding: 1rem;">
+                    <!-- Grievance Header -->
+                    <div style="background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%); color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0 0 0.5rem 0;">Grievance #${grievance.id}</h2>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <span class="badge" style="background: white; color: #1E40AF; font-weight: 600;">
+                                ${grievance.assigned_department}
+                            </span>
+                            <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">
+                                ${grievance.status}
+                            </span>
+                            <span style="font-size: 0.875rem;">📅 ${formatDate(grievance.created_at)}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Complainant Information -->
+                    <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0 0 1rem 0; color: #92400E; display: flex; align-items: center; gap: 0.5rem;">
+                            👤 Complainant Information
+                        </h3>
+                        ${grievance.complainant ? `
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #92400E; font-weight: 600; margin-bottom: 0.25rem;">Full Name</div>
+                                    <div style="color: #78350F; font-weight: 500;">${grievance.complainant.name}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #92400E; font-weight: 600; margin-bottom: 0.25rem;">Email</div>
+                                    <div style="color: #78350F;">📧 ${grievance.complainant.email}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #92400E; font-weight: 600; margin-bottom: 0.25rem;">Phone</div>
+                                    <div style="color: #78350F;">📞 ${grievance.complainant.phone}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #FDE68A;">
+                                <div style="font-size: 0.75rem; color: #92400E; font-weight: 600; margin-bottom: 0.5rem;">🏠 Residential Address (As per Aadhaar)</div>
+                                <div style="color: #78350F; line-height: 1.6;">
+                                    ${grievance.complainant.residential_address || 'Not provided'}<br>
+                                    ${grievance.complainant.residential_city || ''} ${grievance.complainant.residential_state || ''} - ${grievance.complainant.residential_pincode || ''}
+                                </div>
+                            </div>
+                        ` : '<p style="color: #78350F;">Complainant information not available</p>'}
+                    </div>
+                    
+                    <!-- Assigned Officer Information -->
+                    ${grievance.assigned_officer ? `
+                        <div style="background: #DBEAFE; border-left: 4px solid #3B82F6; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0 0 1rem 0; color: #1E40AF; display: flex; align-items: center; gap: 0.5rem;">
+                                👮 Assigned Officer Information
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Officer Name</div>
+                                    <div style="color: #1E3A8A; font-weight: 500;">${grievance.assigned_officer.name}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Designation</div>
+                                    <div style="color: #1E3A8A;">${grievance.assigned_officer.designation || 'Officer'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Department</div>
+                                    <div style="color: #1E3A8A;">${grievance.assigned_officer.department || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Office Phone</div>
+                                    <div style="color: #1E3A8A;">📞 ${grievance.assigned_officer.office_number || grievance.assigned_officer.phone}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Office Email</div>
+                                    <div style="color: #1E3A8A;">📧 ${grievance.assigned_officer.office_email || grievance.assigned_officer.email}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.25rem;">Office Building</div>
+                                    <div style="color: #1E3A8A;">${grievance.assigned_officer.office_building || 'N/A'}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #BFDBFE;">
+                                <div style="font-size: 0.75rem; color: #1E40AF; font-weight: 600; margin-bottom: 0.5rem;">📍 Office Location</div>
+                                <div style="color: #1E3A8A;">${grievance.assigned_officer.office_location || 'Not provided'}</div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <p style="color: #92400E; margin: 0 0 0.75rem 0; font-weight: 600;">⚠️ No officer assigned to this complaint yet</p>
+                            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                                <select id="assignOfficerSelect" class="form-select" style="max-width: 280px;">
+                                    <option value="">Select officer from ${grievance.assigned_department}...</option>
+                                </select>
+                                <button onclick="assignOfficerToGrievance(${grievance.id})" class="btn btn-primary" style="padding: 0.5rem 1rem;">Assign Officer</button>
+                            </div>
+                        </div>
+                    `}
+                    
+                    <!-- Complaint Details -->
+                    <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0 0 1rem 0; color: #1F2937;">📝 Complaint Details</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.75rem; color: #6B7280; font-weight: 600; margin-bottom: 0.5rem;">Complaint Text</div>
+                            <div style="color: #374151; line-height: 1.6; padding: 1rem; background: #F9FAFB; border-radius: 6px;">
+                                ${escapeHtml(grievance.complaint_text)}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: #6B7280; font-weight: 600; margin-bottom: 0.5rem;">📍 Complaint Location</div>
+                            <div style="color: #374151;">${grievance.location || 'Not provided'}</div>
+                        </div>
+                        ${grievance.images && grievance.images.length > 0 ? `
+                            <div style="margin-top: 1rem;">
+                                <div style="font-size: 0.75rem; color: #6B7280; font-weight: 600; margin-bottom: 0.5rem;">📸 Evidence Images (${grievance.images.length})</div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem;">
+                                    ${grievance.images.map((img, idx) => `
+                                        <img src="${img}" alt="Evidence ${idx + 1}" 
+                                            style="width: 100%; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid #E5E7EB;"
+                                            onclick="window.open('${img}', '_blank')">
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="closeDetailsModal()" class="btn btn-secondary">Close</button>
+                        <a href="track.html?id=${grievance.id}" class="btn btn-primary" style="text-decoration: none;">View Full Timeline</a>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            
+            // Populate assign officer dropdown if no officer assigned
+            if (!grievance.assigned_officer && window.officersData) {
+                const select = document.getElementById('assignOfficerSelect');
+                if (select) {
+                    const deptOfficers = window.officersData.filter(o => o.department === grievance.assigned_department);
+                    select.innerHTML = '<option value="">Select officer...</option>' + 
+                        deptOfficers.map(o => `<option value="${o.id}">${o.name} (${o.designation || 'Officer'})</option>`).join('');
+                }
+            }
+        }
+        
+        async function assignOfficerToGrievance(grievanceId) {
+            const select = document.getElementById('assignOfficerSelect');
+            const officerId = select ? parseInt(select.value) : 0;
+            if (!officerId) {
+                showAlert('Please select an officer', 'error');
+                return;
+            }
+            try {
+                await apiCall('/admin/assign-officer', {
+                    method: 'POST',
+                    body: JSON.stringify({ grievance_id: grievanceId, officer_id: officerId })
+                });
+                showAlert('Officer assigned successfully!', 'success');
+                closeDetailsModal();
+                loadGrievances();
+            } catch (e) {
+                showAlert(e.message || 'Failed to assign officer', 'error');
+            }
+        }
+        
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+    
+    <!-- Details Modal -->
+    <div id="detailsModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div style="background-color: white; margin: 5% auto; padding: 0; border-radius: 12px; max-width: 900px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; color: #1F2937;">Complete Grievance Information</h2>
+                <button onclick="closeDetailsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6B7280; padding: 0.5rem;">&times;</button>
+            </div>
+            <div id="detailsContent"></div>
+        </div>
+    </div>
+    
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+</body>
+</html>

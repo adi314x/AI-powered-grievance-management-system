@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Smart Grievance Redressal System | Government of India</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <link rel="stylesheet" href="css/index-page.css">
+
+</head>
+<body>
+    <!-- Government Header -->
+    <header class="gov-header">
+        <div class="gov-header-content">
+            <div class="gov-logo-section">
+                <div class="gov-emblem">🇮🇳</div>
+                <div class="gov-title">
+                    <h1 data-translate="app_name">Smart Grievance Redressal System</h1>
+                    <p>Government of India | Digital India Initiative</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="profile.html" class="btn btn-secondary" data-translate="profile">My Profile</a>
+                <span id="userWelcome" style="color: white; font-size: 14px;"></span>
+                <button id="logoutBtn" class="btn btn-primary" data-translate="logout">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h2 data-translate="welcome_hero">Welcome to Smart Grievance Portal</h2>
+            <p data-translate="hero_description">Submit your complaints online and track their resolution in real-time. Our AI-powered system ensures your grievance reaches the right department instantly.</p>
+        </div>
+    </section>
+
+    <!-- Statistics Bar -->
+    <div class="stats-bar">
+        <div class="stats-content">
+            <div class="stat-item">
+                <span class="stat-number" id="totalGrievances">0</span>
+                <span class="stat-label" data-translate="total_grievances">Total Grievances</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="resolvedGrievances">0</span>
+                <span class="stat-label" data-translate="resolved">Resolved</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="pendingGrievances">0</span>
+                <span class="stat-label" data-translate="in_progress">In Progress</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="avgResolutionTime">0</span>
+                <span class="stat-label" data-translate="avg_resolution">Avg. Resolution (days)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Resolved Cases Showcase -->
+        <section class="section">
+            <h2 class="section-title" data-translate="recently_resolved_cases">Recently Resolved Cases</h2>
+            <p style="color: #64748b; margin-bottom: 20px;" data-translate="resolved_cases_desc">See how we've helped citizens resolve their grievances across India</p>
+            
+            <div class="cases-grid" id="resolvedCasesGrid">
+                <!-- Cases will be loaded here dynamically -->
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+        <!-- Submit New Grievance -->
+        <section class="section">
+            <h2 class="section-title" data-translate="submit_new_grievance">Submit New Grievance</h2>
+            
+            <!-- Alert -->
+            <div id="alertBox" class="alert"></div>
+
+            <!-- Residential Address Notice -->
+            <div id="addressNotice" class="notice-box warning" style="display: none;">
+                <div class="notice-title" data-translate="address_required">Residential Address Required</div>
+                <div class="notice-text">
+                    <span data-translate="address_required_desc">Please complete your residential address in your profile before submitting complaints. This is mandatory for identity verification and fraud prevention.</span>
+                    <a href="profile.html" style="color: #1e40af; font-weight: 600; margin-left: 10px;" data-translate="complete_profile">Complete Profile →</a>
+                </div>
+            </div>
+
+            <!-- Verification Notice -->
+            <div class="notice-box info">
+                <div class="notice-title" data-translate="anti_fraud_measures">Verification & Anti-Fraud Measures</div>
+                <div class="notice-text" data-translate="anti_fraud_measures_desc">
+                    All complaints are verified to prevent fraudulent submissions. We collect residential address, complaint location, and image evidence. Submitting false complaints is a punishable offense.
+                </div>
+            </div>
+
+            <form id="grievanceForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="complaint_details">Complaint Details</span> <span class="required">*</span>
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <textarea id="complaint" class="form-textarea" 
+                            data-translate="describe_complaint_placeholder" placeholder="Describe your complaint in detail (minimum 20 characters)" 
+                            required minlength="20"></textarea>
+                        <button type="button" id="voiceBtn" title="Voice input" aria-label="Use voice input" style="padding: 0.5rem; background: #3B82F6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">🎤</button>
+                    </div>
+                    <small class="form-hint" data-translate="complaint_hint">Our AI will automatically assign your complaint to the appropriate department. Click 🎤 for voice input.</small>
+                    <small id="predictedDepartmentHint" class="form-hint" style="display: none;"></small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="complaint_location">Complaint Location</span> <span class="required">*</span>
+                    </label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="location" class="form-input" 
+                            data-translate="enter_exact_location" placeholder="Enter exact location: Building/House No, Street, Area, Landmark, City, State, PIN" 
+                            required>
+                        <button type="button" id="geoBtn" class="btn btn-secondary" style="white-space: nowrap;" aria-label="Use current GPS location" data-translate="use_gps">📍 Use GPS</button>
+                    </div>
+                    <small class="form-hint" data-translate="location_hint">Enter the location where the complaint is. Click "Use GPS" to auto-detect.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="upload_evidence">Upload Evidence Images</span> <span class="required" id="imageRequirementLabel" data-translate="mandatory">* MANDATORY</span>
+                    </label>
+                    
+                    <div id="imageDropZone" class="image-upload-zone required-upload" role="button" tabindex="0" aria-label="Upload complaint evidence images">
+                        <div class="upload-icon">📸</div>
+                        <p style="font-weight: 600; color: #1e3a8a; margin-bottom: 5px;" data-translate="drag_drop">Click to upload or drag and drop</p>
+                        <p style="font-size: 13px; color: #64748b;" data-translate="image_limits">PNG, JPG, JPEG up to 5MB each (Max 5 images)</p>
+                        <p id="imageRequirementHint" style="font-size: 12px; color: #ef4444; margin-top: 10px; font-weight: 600;" data-translate="mandatory_image_hint">At least 1 image is mandatory to prevent fraudulent complaints</p>
+                    </div>
+                    <input type="file" id="complaintImages" accept="image/*" multiple style="display: none;">
+                    
+                    <div id="imagePreviewContainer" class="image-preview-grid" style="display: none;"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="submit_grievance">
+                    Submit Grievance
+                </button>
+            </form>
+        </section>
+
+        <!-- My Grievances -->
+        <section class="section">
+            <h2 class="section-title" data-translate="my_grievances">My Grievances</h2>
+            
+            <div id="grievancesList">
+                <div class="spinner"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="department-image-requirements.js"></script>
+    <script src="js/pages/index-dashboard.js"></script>
+    <script src="js/pages/index-form.js"></script>
+    <script src="js/pages/index-page.js"></script>
+    <script src="translations.js"></script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+</body>
+</html>

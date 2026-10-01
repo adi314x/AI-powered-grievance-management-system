@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Grievance - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="department-backgrounds.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1 data-translate="app_name">Smart Grievance System</h1>
+            <div class="header-actions">
+                <div class="user-info"></div>
+                <button id="backToHomeBtn" class="btn btn-secondary" data-translate="back_to_home">Back to Home</button>
+                <button id="logoutBtn" class="btn btn-secondary" data-translate="logout">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div id="grievanceDetails">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="card-title" style="margin: 0;" data-translate="tracking_timeline">Tracking Timeline</h2>
+                <button onclick="scrollToComments()" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.3)'">
+                    <span style="font-size: 1.2rem;">💬</span>
+                    <span data-translate="view_comments">View Comments</span>
+                    <span id="commentCount" style="
+                        background: rgba(255, 255, 255, 0.3);
+                        padding: 0.125rem 0.5rem;
+                        border-radius: 12px;
+                        font-size: 0.75rem;
+                    ">0</span>
+                </button>
+            </div>
+            <div id="timeline">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="card" id="commentsSection">
+            <h2 class="card-title" data-translate="comments_and_feedback">Comments & Feedback</h2>
+            
+            <!-- Language Selector Notice -->
+            <div style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 2px solid #3B82F6; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: start; gap: 0.75rem;">
+                    <span style="font-size: 1.5rem;">🌐</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #1E40AF; margin-bottom: 0.5rem;" data-translate="auto_translate_available">
+                            Automatic Translation Available
+                        </div>
+                        <p style="margin: 0 0 0.75rem 0; color: #1E40AF; font-size: 0.875rem; line-height: 1.6;" data-translate="auto_translate_desc">
+                            Officer comments are automatically translated to your preferred language. 
+                            Select a language below to view translations instantly.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <label style="font-size: 0.875rem; color: #1E40AF; font-weight: 600;" data-translate="your_language">Your Language:</label>
+                            <select id="commentLanguageSelect" style="
+                                padding: 0.5rem 0.75rem;
+                                border: 2px solid #3B82F6;
+                                border-radius: 6px;
+                                font-size: 0.875rem;
+                                font-weight: 600;
+                                background: white;
+                                cursor: pointer;
+                                color: #1E40AF;
+                            ">
+                                <option value="en">English</option>
+                                <option value="hi">हिंदी (Hindi)</option>
+                                <option value="ta">தமிழ் (Tamil)</option>
+                                <option value="te">తెలుగు (Telugu)</option>
+                                <option value="bn">বাংলা (Bengali)</option>
+                                <option value="mr">मराठी (Marathi)</option>
+                                <option value="gu">ગુજરાતી (Gujarati)</option>
+                                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                                <option value="ml">മലയാളം (Malayalam)</option>
+                                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                                <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                                <option value="ur">اردو (Urdu)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" data-translate="comment_desc">
+                Have questions or additional information? Use the comment section below to communicate with the department officers.
+            </p>
+            
+            <!-- Comment Form -->
+            <div class="form-group">
+                <label class="form-label" for="commentText" data-translate="add_comment">Add Comment</label>
+                <textarea id="commentText" class="form-textarea" rows="3" 
+                    data-translate="type_comment_placeholder" placeholder="Type your comment or feedback here..."></textarea>
+            </div>
+            <button id="addCommentBtn" class="btn btn-primary" data-translate="post_comment">Post Comment</button>
+
+            <!-- Comments List -->
+            <div id="commentsList" style="margin-top: 2rem;">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Rating Section (shown when Resolved/Closed) -->
+            <div id="ratingSection" style="display: none; margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; border: 2px solid #22c55e;">
+                <h3 style="margin-bottom: 1rem;" data-translate="rate_experience">⭐ Rate Your Experience</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;" data-translate="how_was_resolution">How was the resolution of your complaint?</p>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; font-size: 2rem;" id="starRating">
+                    <span data-rating="1" style="cursor: pointer;">☆</span>
+                    <span data-rating="2" style="cursor: pointer;">☆</span>
+                    <span data-rating="3" style="cursor: pointer;">☆</span>
+                    <span data-rating="4" style="cursor: pointer;">☆</span>
+                    <span data-rating="5" style="cursor: pointer;">☆</span>
+                </div>
+                <textarea id="ratingFeedback" data-translate="optional_feedback" placeholder="Optional feedback..." rows="2" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 6px;"></textarea>
+                <button id="submitRatingBtn" class="btn btn-success" data-translate="submit_rating">Submit Rating</button>
+                <p id="ratingThanks" style="display: none; color: #22c55e; font-weight: 600;" data-translate="thanks_feedback">Thank you for your feedback!</p>
+            </div>
+
+            <!-- QR Code & Share -->
+            <div id="qrSection" style="margin-top: 1.5rem; text-align: center;">
+                <p style="margin-bottom: 0.5rem; font-weight: 600;">📱 Scan to track</p>
+                <img id="qrImage" src="" alt="QR Code" style="max-width: 150px; border-radius: 8px;">
+                <div style="margin-top: 1rem;">
+                    <button onclick="shareGrievance()" class="btn btn-secondary" style="padding: 0.4rem 1rem;">📤 Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="translations.js"></script>
+    <script>
+        if (!checkAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        // Smooth scroll to comments section
+        function scrollToComments() {
+            const commentsSection = document.getElementById('commentsSection');
+            if (commentsSection) {
+                commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add a subtle highlight effect
+                commentsSection.style.transition = 'box-shadow 0.3s ease';
+                commentsSection.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
+                setTimeout(() => {
+                    commentsSection.style.boxShadow = '';
+                }, 1500);
+            }
+        }
+
+        // Get grievance ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const grievanceId = urlParams.get('id');
+
+        if (!grievanceId) {
+            showAlert('No grievance ID provided', 'error');
+            setTimeout(() => window.location.href = getHomeUrl(), 2000);
+        }
+
+        // Back to Home button - goes to correct portal based on role
+        document.getElementById('backToHomeBtn').addEventListener('click', () => {
+            window.location.href = getHomeUrl();
+        });
+
+        // Load grievance details
+        async function loadGrievance() {
+            try {
+                const data = await apiCall(`/grievances/${grievanceId}`);
+                const grievance = data.grievance;
+
+                // Display grievance details
+                document.getElementById('grievanceDetails').innerHTML = `
+                    <h2 class="card-title">Grievance #${grievance.id}</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <div class="stat-label">Department</div>
+                            <div style="font-weight: 600; color: var(--primary-color);">${grievance.assigned_department}</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Current Status</div>
+                            <div>${renderStatusBadge(grievance.status || 'Received')}</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Submitted On</div>
+                            <div style="font-weight: 500;">${formatDate(grievance.created_at)}</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Last Updated</div>
+                            <div style="font-weight: 500;">${formatDate(grievance.updated_at)}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Complaint Details</div>
+                        <p style="margin-top: 0.5rem; line-height: 1.6;">${escapeHtml(grievance.complaint_text)}</p>
+                    </div>
+                    
+                    <!-- Complainant Information -->
+                    ${grievance.complainant_name || grievance.complainant_phone || grievance.complainant_email ? `
+                        <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #f3f4f622 0%, #e5e7eb22 100%); border-radius: 8px;">
+                            <div class="stat-label" style="margin-bottom: 0.75rem;">👤 Complainant Information</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                ${grievance.complainant_name ? `
+                                    <div>
+                                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Name</small>
+                                        <strong>${escapeHtml(grievance.complainant_name)}</strong>
+                                    </div>
+                                ` : ''}
+                                ${grievance.complainant_phone ? `
+                                    <div>
+                                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Phone</small>
+                                        <strong>📞 ${escapeHtml(grievance.complainant_phone)}</strong>
+                                    </div>
+                                ` : ''}
+                                ${grievance.complainant_email ? `
+                                    <div>
+                                        <small style="color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Email</small>
+                                        <strong>📧 ${escapeHtml(grievance.complainant_email)}</strong>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${grievance.location ? `
+                        <div style="margin-top: 1rem;">
+                            <div class="stat-label">📍 Location</div>
+                            <p style="margin-top: 0.5rem;">${grievance.location}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Complaint Images -->
+                    ${grievance.images && grievance.images.length > 0 ? `
+                        <div style="margin-top: 1rem;">
+                            <div class="stat-label">📸 Complaint Images (${grievance.images.length})</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.75rem;">
+                                ${grievance.images.map((img, idx) => `
+                                    <div style="position: relative; border: 2px solid #E5E7EB; border-radius: 8px; overflow: hidden; aspect-ratio: 1; cursor: pointer;" 
+                                         onclick="viewImage('${img}', ${idx + 1}, ${grievance.images.length})">
+                                        <img src="${img}" style="width: 100%; height: 100%; object-fit: cover;" alt="Complaint image ${idx + 1}">
+                                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 4px; text-align: center; font-size: 12px;">
+                                            Image ${idx + 1}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                                Click on any image to view full size
+                            </small>
+                        </div>
+                    ` : ''}
+                `;
+
+                // Display timeline with translation
+                const selectedLang = document.getElementById('commentLanguageSelect').value;
+                const languageNames = {
+                    'en': 'English',
+                    'hi': 'हिंदी',
+                    'ta': 'தமிழ்',
+                    'te': 'తెలుగు',
+                    'bn': 'বাংলা',
+                    'mr': 'मराठी',
+                    'gu': 'ગુજરાતી',
+                    'kn': 'ಕನ್ನಡ',
+                    'ml': 'മലയാളം',
+                    'pa': 'ਪੰਜਾਬੀ',
+                    'or': 'ଓଡ଼ିଆ',
+                    'ur': 'اردو'
+                };
+                
+                if (grievance.updates && grievance.updates.length > 0) {
+                    const timelineHtml = grievance.updates.map((update, index) => {
+                        const isCompleted = ['Resolved', 'Closed'].includes(update.status);
+                        const isOfficerUpdate = update.updated_by_role === 'OFFICER' || update.updated_by_role === 'ADMIN';
+                        const showTranslation = isOfficerUpdate && selectedLang !== 'en';
+                        
+                        return `
+                            <div class="timeline-item ${isCompleted ? 'completed' : ''}" data-timeline-index="${index}">
+                                <div class="timeline-content">
+                                    <div class="timeline-status" data-translate="status_${normalizeWorkflowStatus(update.status)}">${update.status}</div>
+                                    
+                                    ${showTranslation ? `
+                                        <!-- Translated Message -->
+                                        <div style="margin-bottom: 0.5rem;">
+                                            <div style="display: inline-block; background: #10B981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                                📝 ${languageNames[selectedLang]}
+                                            </div>
+                                        </div>
+                                        <div class="timeline-message timeline-translated-${index}" style="font-weight: 600; font-size: 1.05em; line-height: 1.8;">
+                                            <div style="color: #6B7280; font-size: 0.875rem;">
+                                                <div class="spinner" style="width: 16px; height: 16px; border-width: 2px; display: inline-block; vertical-align: middle;"></div>
+                                                <span data-translate="loading">Translating...</span>
+                                            </div>
+                                        </div>
+                                        <details style="margin-top: 0.5rem;">
+                                            <summary style="cursor: pointer; font-size: 0.75rem; color: #6B7280; font-weight: 600;" data-translate="original_message">
+                                                📄 Original Message
+                                            </summary>
+                                            <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #E5E7EB; font-size: 0.9em; color: #4B5563;">
+                                                ${update.message}
+                                            </div>
+                                        </details>
+                                    ` : `
+                                        <!-- Original Message -->
+                                        <div class="timeline-message">${update.message}</div>
+                                    `}
+                                    
+                                    <div class="timeline-meta">
+                                        <span><span data-translate="updated_by_label">Updated by</span>: ${update.updated_by_name} (${update.updated_by_role})</span>
+                                        <span>${formatDate(update.timestamp)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    document.getElementById('timeline').innerHTML = `
+                        <div class="timeline">
+                            ${timelineHtml}
+                        </div>
+                    `;
+                    
+                    }
+
+                    // Trigger translation for dynamic parts
+                    if (typeof applyTranslations === 'function') {
+                        applyTranslations();
+                    }
+                } else {
+                    document.getElementById('timeline').innerHTML = 
+                        `<p style="color: var(--text-secondary);" data-translate="no_updates">No updates yet.</p>`;
+                    if (typeof applyTranslations === 'function') applyTranslations();
+                }
+
+                // Show rating section if resolved, load QR
+                if (['Resolved', 'Closed'].includes(grievance.status)) {
+                    document.getElementById('ratingSection').style.display = 'block';
+                    loadRatingAndSetup();
+                }
+                document.getElementById('qrImage').src = `/api/grievances/${grievanceId}/qr`;
+
+            } catch (error) {
+                showAlert(error.message || 'Failed to load grievance', 'error');
+                setTimeout(() => window.location.href = getHomeUrl(), 2000);
+            }
+        }
+
+        // Load comments
+        async function loadComments() {
+            try {
+                const data = await apiCall(`/grievances/${grievanceId}/comments`);
+                const commentsList = document.getElementById('commentsList');
+
+                if (data.comments.length === 0) {
+                    commentsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;" data-translate="no_comments">No comments yet. Be the first to comment!</p>';
+                    if (typeof applyTranslations === 'function') applyTranslations();
+                    return;
+                }
+
+                const selectedLang = document.getElementById('commentLanguageSelect').value;
+                const languageNames = {
+                    'en': 'English',
+                    'hi': 'हिंदी',
+                    'ta': 'தமிழ்',
+                    'te': 'తెలుగు',
+                    'bn': 'বাংলা',
+                    'mr': 'मराठी',
+                    'gu': 'ગુજરાતી',
+                    'kn': 'ಕನ್ನಡ',
+                    'ml': 'മലയാളം',
+                    'pa': 'ਪੰਜਾਬੀ',
+                    'or': 'ଓଡ଼ିଆ',
+                    'ur': 'اردو'
+                };
+                
+                const commentsHtml = data.comments.map((comment, index) => {
+                    const isOfficer = comment.user_role === 'OFFICER' || comment.user_role === 'ADMIN';
+                    const bgColor = isOfficer ? '#e0e7ff' : '#f3f4f6';
+                    const borderColor = isOfficer ? '#4338ca' : '#9ca3af';
+                    const roleColor = isOfficer ? '#4338ca' : '#6b7280';
+                    
+                    // Auto-translate officer comments if language is not English
+                    const showTranslation = isOfficer && selectedLang !== 'en';
+                    
+                    const safeText = escapeHtml(comment.comment_text);
+                    const attrEscaped = (comment.comment_text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    return `
+                        <div class="comment-item" data-comment-id="${comment.id}" data-comment-index="${index}" data-comment-text="${attrEscaped}" style="background: ${bgColor}; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${borderColor}; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div>
+                                    <strong style="color: var(--text-primary);">${escapeHtml(comment.user_name)}</strong>
+                                    <span class="badge" style="margin-left: 0.5rem; background: ${roleColor}; color: white; font-size: 0.75rem;">${comment.user_role}</span>
+                                </div>
+                                <span style="font-size: 0.875rem; color: var(--text-secondary);">${formatDate(comment.created_at)}</span>
+                            </div>
+                            
+                            ${showTranslation ? `
+                                <!-- Translated Version (Primary Display) -->
+                                <div class="comment-translated-primary" style="margin-bottom: 0.75rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <div style="display: inline-block; background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">
+                                            📝 ${languageNames[selectedLang]}
+                                        </div>
+                                        <select class="comment-lang-select-${index}" onchange="changeCommentLanguage(${index}, this.value, this.closest('.comment-item').getAttribute('data-comment-text'))" style="
+                                            padding: 4px 8px;
+                                            border: 1px solid #D1D5DB;
+                                            border-radius: 4px;
+                                            font-size: 0.75rem;
+                                            font-weight: 600;
+                                            background: white;
+                                            cursor: pointer;
+                                            color: #4B5563;
+                                        ">
+                                            <option value="">Change Language...</option>
+                                            <option value="en">English</option>
+                                            <option value="hi">हिंदी</option>
+                                            <option value="ta">தமிழ்</option>
+                                            <option value="te">తెలుగు</option>
+                                            <option value="bn">বাংলা</option>
+                                            <option value="mr">मराठी</option>
+                                            <option value="gu">ગુજરાતી</option>
+                                            <option value="kn">ಕನ್ನಡ</option>
+                                            <option value="ml">മലയാളം</option>
+                                            <option value="pa">ਪੰਜਾਬੀ</option>
+                                            <option value="or">ଓଡ଼ିଆ</option>
+                                            <option value="ur">اردو</option>
+                                        </select>
+                                    </div>
+                                    <div class="translated-text-${index}" style="color: var(--text-primary); line-height: 1.8; font-weight: 600; font-size: 1.05em;">
+                                        <div style="text-align: center; padding: 1rem; color: #6B7280;">
+                                            <div class="spinner" style="width: 20px; height: 20px; border-width: 2px; margin: 0 auto;"></div>
+                                            <small style="display: block; margin-top: 0.5rem;">Translating...</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Original Text (Collapsible) -->
+                                <details style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.03); border-radius: 6px; border: 1px solid #D1D5DB;">
+                                    <summary style="cursor: pointer; font-size: 0.875rem; color: #6B7280; font-weight: 600;">
+                                        📄 View Original Text
+                                    </summary>
+                                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #E5E7EB; color: var(--text-primary); line-height: 1.6;">
+                                        ${safeText}
+                                    </div>
+                                </details>
+                                
+                                <small style="color: #6B7280; font-style: italic; display: block; margin-top: 0.5rem;" data-translate="auto_translate_hint">
+                                    ⚠️ Automatic translation for your convenience. Original text available above.
+                                </small>
+                            ` : `
+                                <!-- Original Text (No Translation Needed) -->
+                                <div style="color: var(--text-primary); line-height: 1.6;">
+                                    ${safeText}
+                                </div>
+                                ${isOfficer ? `
+                                    <div style="margin-top: 0.75rem;">
+                                        <select class="comment-lang-select-${index}" onchange="changeCommentLanguage(${index}, this.value, this.closest('.comment-item').getAttribute('data-comment-text'))" style="
+                                            padding: 6px 12px;
+                                            border: 2px solid #3B82F6;
+                                            border-radius: 6px;
+                                            font-size: 0.875rem;
+                                            font-weight: 600;
+                                            background: white;
+                                            cursor: pointer;
+                                            color: #1E40AF;
+                                        ">
+                                            <option value="" data-translate="translate_comment">🌐 Translate this comment...</option>
+                                            <option value="hi">हिंदी (Hindi)</option>
+                                            <option value="ta">தமிழ் (Tamil)</option>
+                                            <option value="te">తెలుగు (Telugu)</option>
+                                            <option value="bn">বাংলা (Bengali)</option>
+                                            <option value="mr">मराठी (Marathi)</option>
+                                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                                            <option value="ml">മലയാളം (Malayalam)</option>
+                                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                                            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                                            <option value="ur">اردو (Urdu)</option>
+                                        </select>
+                                    </div>
+                                ` : ''}
+                            `}
+                            `}
+                        </div>
+                    `;
+                }).join('');
+
+                commentsList.innerHTML = commentsHtml;
+                
+                // Update comment count badge
+                const commentCountBadge = document.getElementById('commentCount');
+                if (commentCountBadge) {
+                    commentCountBadge.textContent = data.comments.length;
+                }
+                
+                // Auto-translate officer comments
+                if (selectedLang !== 'en') {
+                    data.comments.forEach((comment, index) => {
+                        const isOfficer = comment.user_role === 'OFFICER' || comment.user_role === 'ADMIN';
+                        if (isOfficer) {
+                            autoTranslateComment(index, comment.comment_text, selectedLang);
+                        }
+                    });
+                }
+            } catch (error) {
+                document.getElementById('commentsList').innerHTML = 
+                    `<p class="alert alert-error">${escapeHtml(error.message)}</p>`;
+            }
+        }
+
+        // Add comment
+        document.getElementById('addCommentBtn').addEventListener('click', async () => {
+            const commentText = document.getElementById('commentText').value.trim();
+
+            if (!commentText || commentText.length < 5) {
+                showAlert('Comment must be at least 5 characters long', 'error');
+                return;
+            }
+
+            try {
+                await apiCall(`/grievances/${grievanceId}/comments`, {
+                    method: 'POST',
+                    body: JSON.stringify({ comment_text: commentText })
+                });
+
+                showAlert('Comment posted successfully!', 'success');
+                document.getElementById('commentText').value = '';
+                loadComments();
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        // Image viewer function
+        function viewImage(imageSrc, currentIndex, totalImages) {
+            const modal = document.createElement('div');
+            modal.id = 'imageViewerModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.95);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+            `;
+            
+            modal.innerHTML = `
+                <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
+                    <span style="color: white; font-size: 16px; font-weight: 500;">Image ${currentIndex} of ${totalImages}</span>
+                    <button onclick="closeImageViewer()" style="
+                        background: #EF4444;
+                        color: white;
+                        border: none;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">×</button>
+                </div>
+                <img src="${imageSrc}" style="
+                    max-width: 90%;
+                    max-height: 90%;
+                    object-fit: contain;
+                    border-radius: 8px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                " alt="Complaint image">
+                <div style="position: absolute; bottom: 20px; text-align: center; color: white;">
+                    <p style="margin: 0; font-size: 14px;">Click anywhere to close</p>
+                </div>
+            `;
+            
+            modal.onclick = closeImageViewer;
+            document.body.appendChild(modal);
+        }
+
+        function closeImageViewer() {
+            const modal = document.getElementById('imageViewerModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Load grievance and comments on page load
+        loadGrievance();
+        loadComments();
+
+        // Auto-translation function for comments
+        // Translation dictionary for common phrases
+        const translations = {
+            'hi': { 'Received': 'प्राप्त', 'Assigned': 'सौंपा गया', 'In Progress': 'प्रगति में', 'Resolved': 'हल हो गया', 'Closed': 'बंद', 'Rejected': 'अस्वीकृत', 'Your complaint': 'आपकी शिकायत', 'has been': 'है', 'processed': 'संसाधित', 'received': 'प्राप्त', 'assigned': 'सौंपा गया', 'Updated by': 'द्वारा अपडेट', 'SYSTEM': 'सिस्टम', 'department': 'विभाग', 'to': 'को', 'for': 'के लिए', 'investigation': 'जांच', 'Supply': 'आपूर्ति', 'Water': 'जल', 'Electricity': 'बिजली', 'Road': 'सड़क', 'Health': 'स्वास्थ्य', 'Education': 'शिक्षा', 'Transport': 'परिवहन', 'issue': 'समस्या', 'problem': 'समस्या', 'complaint': 'शिकायत', 'officer': 'अधिकारी', 'verified': 'सत्यापित', 'under review': 'समीक्षाधीन', 'action taken': 'कार्रवाई की गई' },
+            'ta': { 'Received': 'பெறப்பட்டது', 'Assigned': 'ஒதுக்கப்பட்டது', 'In Progress': 'முன்னேற்றத்தில்', 'Resolved': 'தீர்க்கப்பட்டது', 'Closed': 'மூடப்பட்டது', 'Rejected': 'நிராகரிக்கப்பட்டது', 'Your complaint': 'உங்கள் புகார்', 'has been': 'உள்ளது', 'processed': 'செயல்படுத்தப்பட்டது', 'received': 'பெறப்பட்டது', 'assigned': 'ஒதுக்கப்பட்டது', 'Updated by': 'புதுப்பிக்கப்பட்டது', 'SYSTEM': 'அமைப்பு', 'department': 'துறை', 'to': 'க்கு', 'for': 'க்காக', 'investigation': 'விசாரணை', 'Supply': 'வழங்கல்', 'Water': 'நீர்', 'Electricity': 'மின்சாரம்', 'Road': 'சாலை', 'Health': 'சுகாதாரம்', 'Education': 'கல்வி', 'Transport': 'போக்குவரத்து', 'issue': 'பிரச்சினை', 'problem': 'சிக்கல்', 'complaint': 'புகார்', 'officer': 'அதிகாரி', 'verified': 'சரிபார்க்கப்பட்டது', 'under review': 'ஆய்வில்', 'action taken': 'நடவடிக்கை எடுக்கப்பட்டது' },
+            'te': { 'Received': 'స్వీకరించబడింది', 'Assigned': 'కేటాయించబడింది', 'In Progress': 'పురోగతిలో', 'Resolved': 'పరిష్కరించబడింది', 'Closed': 'మూసివేయబడింది', 'Rejected': 'తిరస్కరించబడింది', 'Your complaint': 'మీ ఫిర్యాదు', 'has been': 'ఉంది', 'processed': 'ప్రాసెస్ చేయబడింది', 'received': 'స్వీకరించబడింది', 'assigned': 'కేటాయించబడింది', 'Updated by': 'నవీకరించబడింది', 'SYSTEM': 'వ్యవస్థ', 'department': 'విభాగం', 'to': 'కు', 'for': 'కోసం', 'investigation': 'దర్యాప్తు', 'Supply': 'సరఫరా', 'Water': 'నీరు', 'Electricity': 'విద్యుత్', 'Road': 'రోడ్డు', 'Health': 'ఆరోగ్యం', 'Education': 'విద్య', 'Transport': 'రవాణా', 'issue': 'సమస్య', 'problem': 'సమస్య', 'complaint': 'ఫిర్యాదు', 'officer': 'అధికారి', 'verified': 'ధృవీకరించబడింది', 'under review': 'సమీక్షలో', 'action taken': 'చర్య తీసుకోబడింది' },
+            'bn': { 'Received': 'প্রাপ্ত', 'Assigned': 'নিয়োগকৃত', 'In Progress': 'চলমান', 'Resolved': 'সমাধান হয়েছে', 'Closed': 'বন্ধ', 'Rejected': 'প্রত্যাখ্যাত', 'Your complaint': 'আপনার অভিযোগ', 'has been': 'হয়েছে', 'processed': 'প্রক্রিয়া করা', 'received': 'প্রাপ্ত', 'assigned': 'নিয়োগ করা', 'Updated by': 'দ্বারা আপডেট', 'SYSTEM': 'সিস্টেম', 'department': 'বিভাগ', 'to': 'কে', 'for': 'জন্য', 'investigation': 'তদন্ত', 'Supply': 'সরবরাহ', 'Water': 'জল', 'Electricity': 'বিদ্যুৎ', 'Road': 'রাস্তা', 'Health': 'স্বাস্থ্য', 'Education': 'শিক্ষা', 'Transport': 'পরিবহন', 'issue': 'সমস্যা', 'problem': 'সমস্যা', 'complaint': 'অভিযোগ', 'officer': 'কর্মকর্তা', 'verified': 'যাচাইকৃত', 'under review': 'পর্যালোচনাধীন', 'action taken': 'পদক্ষেপ নেওয়া হয়েছে' },
+            'mr': { 'Received': 'प्राप्त', 'Assigned': 'नियुक्त', 'In Progress': 'प्रगतीपथावर', 'Resolved': 'निराकरण झाले', 'Closed': 'बंद', 'Rejected': 'नाकारले', 'Your complaint': 'तुमची तक्रार', 'has been': 'आहे', 'processed': 'प्रक्रिया केली', 'received': 'प्राप्त झाली', 'assigned': 'नियुक्त केली', 'Updated by': 'द्वारे अद्यतनित', 'SYSTEM': 'प्रणाली', 'department': 'विभाग', 'to': 'ला', 'for': 'साठी', 'investigation': 'तपास', 'Supply': 'पुरवठा', 'Water': 'पाणी', 'Electricity': 'वीज', 'Road': 'रस्ता', 'Health': 'आरोग्य', 'Education': 'शिक्षण', 'Transport': 'वाहतूक', 'issue': 'समस्या', 'problem': 'समस्या', 'complaint': 'तक्रार', 'officer': 'अधिकारी', 'verified': 'सत्यापित', 'under review': 'पुनरावलोकनाधीन', 'action taken': 'कारवाई केली' },
+            'gu': { 'Received': 'પ્રાપ્ત', 'Assigned': 'સોંપાયેલ', 'In Progress': 'પ્રગતિમાં', 'Resolved': 'ઉકેલાઈ', 'Closed': 'બંધ', 'Rejected': 'નકારી', 'Your complaint': 'તમારી ફરિયાદ', 'has been': 'છે', 'processed': 'પ્રક્રિયા કરી', 'received': 'પ્રાપ્ત થઈ', 'assigned': 'સોંપાઈ', 'Updated by': 'દ્વારા અપડેટ', 'SYSTEM': 'સિસ્ટમ', 'department': 'વિભાગ', 'to': 'ને', 'for': 'માટે', 'investigation': 'તપાસ', 'Supply': 'પુરવઠો', 'Water': 'પાણી', 'Electricity': 'વીજળી', 'Road': 'રસ્તો', 'Health': 'આરોગ્ય', 'Education': 'શિક્ષણ', 'Transport': 'પરિવહન', 'issue': 'સમસ્યા', 'problem': 'સમસ્યા', 'complaint': 'ફરિયાદ', 'officer': 'અધિકારી', 'verified': 'ચકાસાયેલ', 'under review': 'સમીક્ષા હેઠળ', 'action taken': 'પગલાં લેવામાં આવ્યાં' },
+            'kn': { 'Received': 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ', 'Assigned': 'ನಿಯೋಜಿಸಲಾಗಿದೆ', 'In Progress': 'ಪ್ರಗತಿಯಲ್ಲಿದೆ', 'Resolved': 'ಪರಿಹರಿಸಲಾಗಿದೆ', 'Closed': 'ಮುಚ್ಚಲಾಗಿದೆ', 'Rejected': 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ', 'Your complaint': 'ನಿಮ್ಮ ದೂರು', 'has been': 'ಇದೆ', 'processed': 'ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ', 'received': 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ', 'assigned': 'ನಿಯೋಜಿಸಲಾಗಿದೆ', 'Updated by': 'ನವೀಕರಿಸಲಾಗಿದೆ', 'SYSTEM': 'ವ್ಯವಸ್ಥೆ', 'department': 'ಇಲಾಖೆ', 'to': 'ಗೆ', 'for': 'ಗಾಗಿ', 'investigation': 'ತನಿಖೆ', 'Supply': 'ಪೂರೈಕೆ', 'Water': 'ನೀರು', 'Electricity': 'ವಿದ್ಯುತ್', 'Road': 'ರಸ್ತೆ', 'Health': 'ಆರೋಗ್ಯ', 'Education': 'ಶಿಕ್ಷಣ', 'Transport': 'ಸಾರಿಗೆ', 'issue': 'ಸಮಸ್ಯೆ', 'problem': 'ಸಮಸ್ಯೆ', 'complaint': 'ದೂರು', 'officer': 'ಅಧಿಕಾರಿ', 'verified': 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ', 'under review': 'ಪರಿಶೀಲನೆಯಲ್ಲಿ', 'action taken': 'ಕ್ರಮ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ' },
+            'ml': { 'Received': 'ലഭിച്ചു', 'Assigned': 'നിയോഗിച്ചു', 'In Progress': 'പുരോഗതിയിൽ', 'Resolved': 'പരിഹരിച്ചു', 'Closed': 'അടച്ചു', 'Rejected': 'നിരസിച്ചു', 'Your complaint': 'നിങ്ങളുടെ പരാതി', 'has been': 'ആണ്', 'processed': 'പ്രോസസ്സ് ചെയ്തു', 'received': 'ലഭിച്ചു', 'assigned': 'നിയോഗിച്ചു', 'Updated by': 'അപ്ഡേറ്റ് ചെയ്തത്', 'SYSTEM': 'സിസ്റ്റം', 'department': 'വകുപ്പ്', 'to': 'ലേക്ക്', 'for': 'വേണ്ടി', 'investigation': 'അന്വേഷണം', 'Supply': 'വിതരണം', 'Water': 'വെള്ളം', 'Electricity': 'വൈദ്യുതി', 'Road': 'റോഡ്', 'Health': 'ആരോഗ്യം', 'Education': 'വിദ്യാഭ്യാസം', 'Transport': 'ഗതാഗതം', 'issue': 'പ്രശ്നം', 'problem': 'പ്രശ്നം', 'complaint': 'പരാതി', 'officer': 'ഉദ്യോഗസ്ഥൻ', 'verified': 'പരിശോധിച്ചു', 'under review': 'അവലോകനത്തിൽ', 'action taken': 'നടപടി എടുത്തു' },
+            'pa': { 'Received': 'ਪ੍ਰਾਪਤ', 'Assigned': 'ਨਿਯੁਕਤ', 'In Progress': 'ਪ੍ਰਗਤੀ ਵਿੱਚ', 'Resolved': 'ਹੱਲ ਹੋਇਆ', 'Closed': 'ਬੰਦ', 'Rejected': 'ਰੱਦ', 'Your complaint': 'ਤੁਹਾਡੀ ਸ਼ਿਕਾਇਤ', 'has been': 'ਹੈ', 'processed': 'ਪ੍ਰਕਿਰਿਆ ਕੀਤੀ', 'received': 'ਪ੍ਰਾਪਤ ਹੋਈ', 'assigned': 'ਨਿਯੁਕਤ ਕੀਤੀ', 'Updated by': 'ਦੁਆਰਾ ਅੱਪਡੇਟ', 'SYSTEM': 'ਸਿਸਟਮ', 'department': 'ਵਿਭਾਗ', 'to': 'ਨੂੰ', 'for': 'ਲਈ', 'investigation': 'ਜਾਂਚ', 'Supply': 'ਸਪਲਾਈ', 'Water': 'ਪਾਣੀ', 'Electricity': 'ਬਿਜਲੀ', 'Road': 'ਸੜਕ', 'Health': 'ਸਿਹਤ', 'Education': 'ਸਿੱਖਿਆ', 'Transport': 'ਆਵਾਜਾਈ', 'issue': 'ਮੁੱਦਾ', 'problem': 'ਸਮੱਸਿਆ', 'complaint': 'ਸ਼ਿਕਾਇਤ', 'officer': 'ਅਧਿਕਾਰੀ', 'verified': 'ਤਸਦੀਕ ਕੀਤੀ', 'under review': 'ਸਮੀਖਿਆ ਅਧੀਨ', 'action taken': 'ਕਾਰਵਾਈ ਕੀਤੀ' },
+            'or': { 'Received': 'ଗ୍ରହଣ କରାଯାଇଛି', 'Assigned': 'ନିଯୁକ୍ତ', 'In Progress': 'ପ୍ରଗତିରେ', 'Resolved': 'ସମାଧାନ ହୋଇଛି', 'Closed': 'ବନ୍ଦ', 'Rejected': 'ପ୍ରତ୍ୟାଖ୍ୟାନ', 'Your complaint': 'ଆପଣଙ୍କର ଅଭିଯୋଗ', 'has been': 'ହୋଇଛି', 'processed': 'ପ୍ରକ୍ରିୟା କରାଯାଇଛି', 'received': 'ଗ୍ରହଣ କରାଯାଇଛି', 'assigned': 'ନିଯୁକ୍ତ କରାଯାଇଛି', 'Updated by': 'ଦ୍ୱାରା ଅପଡେଟ୍', 'SYSTEM': 'ସିଷ୍ଟମ୍', 'department': 'ବିଭାଗ', 'to': 'କୁ', 'for': 'ପାଇଁ', 'investigation': 'ଅନୁସନ୍ଧାନ', 'Supply': 'ଯୋଗାଣ', 'Water': 'ଜଳ', 'Electricity': 'ବିଦ୍ୟୁତ୍', 'Road': 'ରାସ୍ତା', 'Health': 'ସ୍ୱାସ୍ଥ୍ୟ', 'Education': 'ଶିକ୍ଷା', 'Transport': 'ପରିବହନ', 'issue': 'ସମସ୍ୟା', 'problem': 'ସମସ୍ୟା', 'complaint': 'ଅଭିଯୋଗ', 'officer': 'ଅଧିକାରୀ', 'verified': 'ଯାଞ୍ଚ କରାଯାଇଛି', 'under review': 'ସମୀକ୍ଷାଧୀନ', 'action taken': 'କାର୍ଯ୍ୟାନୁଷ୍ଠାନ ନିଆଯାଇଛି' },
+            'ur': { 'Received': 'وصول ہوا', 'Assigned': 'تفویض کیا گیا', 'In Progress': 'جاری ہے', 'Resolved': 'حل ہو گیا', 'Closed': 'بند', 'Rejected': 'مسترد', 'Your complaint': 'آپ کی شکایت', 'has been': 'ہے', 'processed': 'پر کارروائی کی گئی', 'received': 'موصول', 'assigned': 'تفویض', 'Updated by': 'اپ ڈیٹ از', 'SYSTEM': 'سسٹم', 'department': 'محکمہ', 'to': 'کو', 'for': 'کے لیے', 'investigation': 'تحقیق', 'Supply': 'سپلائی', 'Water': 'پانی', 'Electricity': 'بجلی', 'Road': 'سڑک', 'Health': 'صحت', 'Education': 'تعلیم', 'Transport': 'ٹرانسپورٹ', 'issue': 'مسئلہ', 'problem': 'مسئلہ', 'complaint': 'شکایت', 'officer': 'افسر', 'verified': 'تصدیق شدہ', 'under review': 'زیر جائزہ', 'action taken': 'کارروائی کی گئی' }
+        };
+
+        // Simple translation function
+        function translateText(text, targetLang) {
+            if (targetLang === 'en' || !translations[targetLang]) {
+                return text;
+            }
+            
+            let translatedText = text;
+            const langDict = translations[targetLang];
+            
+            // Replace known phrases and words (case-insensitive)
+            for (const [english, translated] of Object.entries(langDict)) {
+                const regex = new RegExp(english, 'gi');
+                translatedText = translatedText.replace(regex, translated);
+            }
+            
+            return translatedText;
+        }
+
+        async function autoTranslateComment(commentIndex, originalText, targetLang) {
+            const translatedTextDiv = document.querySelector(`.translated-text-${commentIndex}`);
+            
+            if (!translatedTextDiv) return;
+            
+            // Show loading indicator
+            translatedTextDiv.innerHTML = '<div style="color: #6B7280; font-style: italic;">⏳ Translating...</div>';
+            
+            // Simulate translation delay
+            setTimeout(() => {
+                const translatedText = translateText(originalText, targetLang);
+                translatedTextDiv.innerHTML = translatedText;
+            }, 300);
+        }
+        
+        // Auto-translation function for timeline
+        async function autoTranslateTimeline(timelineIndex, originalText, targetLang) {
+            const translatedTextDiv = document.querySelector(`.timeline-translated-${timelineIndex}`);
+            
+            if (!translatedTextDiv) return;
+            
+            // Show loading indicator
+            translatedTextDiv.innerHTML = '<div style="color: #6B7280; font-style: italic;">⏳ Translating...</div>';
+            
+            // Simulate translation delay
+            setTimeout(() => {
+                const translatedText = translateText(originalText, targetLang);
+                translatedTextDiv.innerHTML = translatedText;
+            }, 300);
+        }
+        
+        // Change individual comment language
+        function changeCommentLanguage(commentIndex, targetLang, originalText) {
+            if (!targetLang) return;
+            
+            const languageNames = {
+                'en': 'English',
+                'hi': 'हिंदी',
+                'ta': 'தமிழ்',
+                'te': 'తెలుగు',
+                'bn': 'বাংলা',
+                'mr': 'मराठी',
+                'gu': 'ગુજરાતી',
+                'kn': 'ಕನ್ನಡ',
+                'ml': 'മലയാളം',
+                'pa': 'ਪੰਜਾਬੀ',
+                'or': 'ଓଡ଼ିଆ',
+                'ur': 'اردو'
+            };
+            
+            // Show alert
+            showAlert(`🌐 Translating to ${languageNames[targetLang]}...`, 'info');
+            
+            // Update global language selector to match
+            document.getElementById('commentLanguageSelect').value = targetLang;
+            
+            // Reload all comments with new language
+            loadComments();
+        }
+        
+        function shareGrievance() {
+            const url = window.location.href;
+            const text = `Track my grievance #${grievanceId} - Smart Grievance System`;
+            if (navigator.share) {
+                navigator.share({ title: 'Grievance Tracking', text, url }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(url).then(() => showAlert('Link copied!', 'success'));
+            }
+        }
+
+        // Rating: load existing, setup stars, submit
+        let selectedRating = 0;
+        async function loadRatingAndSetup() {
+            try {
+                const data = await apiCall(`/grievances/${grievanceId}/rating`);
+                if (data.rating) {
+                    selectedRating = data.rating;
+                    document.querySelectorAll('#starRating span').forEach((s, i) => {
+                        s.textContent = i < data.rating ? '★' : '☆';
+                    });
+                    document.getElementById('ratingThanks').style.display = 'block';
+                    document.getElementById('submitRatingBtn').style.display = 'none';
+                }
+            } catch (_) {}
+            document.querySelectorAll('#starRating span').forEach((s) => {
+                s.addEventListener('click', () => {
+                    selectedRating = parseInt(s.dataset.rating);
+                    document.querySelectorAll('#starRating span').forEach((st, i) => {
+                        st.textContent = i < selectedRating ? '★' : '☆';
+                    });
+                });
+            });
+            document.getElementById('submitRatingBtn').addEventListener('click', async () => {
+                if (selectedRating < 1) { showAlert('Please select a rating', 'error'); return; }
+                try {
+                    await apiCall(`/grievances/${grievanceId}/rate`, {
+                        method: 'POST',
+                        body: JSON.stringify({ rating: selectedRating, feedback_text: document.getElementById('ratingFeedback').value })
+                    });
+                    document.getElementById('ratingThanks').style.display = 'block';
+                    document.getElementById('submitRatingBtn').style.display = 'none';
+                    showAlert('Thank you for your feedback!', 'success');
+                } catch (e) { showAlert(e.message, 'error'); }
+            });
+        }
+
+        // Reload comments when global language changes
+        document.getElementById('commentLanguageSelect').addEventListener('change', function() {
+            const selectedLang = this.value;
+            const langName = this.options[this.selectedIndex].text;
+            
+            // Show alert about auto-translation
+            if (selectedLang !== 'en') {
+                showAlert(`🌐 Language changed to ${langName}. Officer comments will be automatically translated.`, 'success');
+            } else {
+                showAlert(`🌐 Language changed to English. Showing original comments.`, 'info');
+            }
+            
+            // Reload comments with new language
+            loadComments();
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadGrievance();
+            loadComments();
+        }, 30000);
+    </script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+    <script src="complaint-translator.js"></script>
+</body>
+</html>

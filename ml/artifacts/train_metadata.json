@@ -1,0 +1,82 @@
+{
+  "trained_at_utc": "2026-09-30T11:46:18.491339",
+  "dataset": {
+    "path": "data\\indian_grievance_dataset.csv",
+    "version_sha256": "85d42eb2a6d80d887df8a7a4ddadcdab5f398abe3964666badab1009daf1f635",
+    "samples": 300,
+    "train_samples": 240,
+    "test_samples": 60,
+    "department_count": 5
+  },
+  "model": {
+    "algorithm": "LogisticRegression",
+    "vectorizer": "TfidfVectorizer",
+    "max_features": 2500,
+    "min_df": 1,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "vocabulary_size": 2500
+  },
+  "metrics": {
+    "accuracy": 0.7833333333333333,
+    "macro_avg_precision": 0.8073593073593074,
+    "macro_avg_recall": 0.7833333333333334,
+    "macro_avg_f1": 0.7884730406469537,
+    "weighted_avg_f1": 0.7884730406469537,
+    "confusion_matrix": {
+      "labels": [
+        "Education",
+        "Electricity",
+        "Roads and Public Works",
+        "Sanitation and Waste Management",
+        "Water Supply"
+      ],
+      "matrix": [
+        [
+          9,
+          0,
+          0,
+          2,
+          1
+        ],
+        [
+          0,
+          10,
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          9,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          10,
+          0
+        ],
+        [
+          0,
+          1,
+          2,
+          0,
+          9
+        ]
+      ]
+    }
+  },
+  "label_classes": [
+    "Education",
+    "Electricity",
+    "Roads and Public Works",
+    "Sanitation and Waste Management",
+    "Water Supply"
+  ]
+}

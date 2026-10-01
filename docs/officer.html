@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer Dashboard - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <link rel="stylesheet" href="department-backgrounds.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1 data-translate="officer_dashboard">Officer Dashboard</h1>
+            <div class="header-actions">
+                <div class="user-info"></div>
+                <a href="officer-profile.html" class="btn btn-primary" style="margin-right: 10px;" data-translate="profile_btn">👤 Profile</a>
+                <button id="logoutBtn" class="btn btn-secondary" data-translate="logout">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title"><span data-translate="dept_grievances">Department Grievances</span> - <span id="departmentName"></span></h2>
+            <div id="grievancesList">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="updateModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto;">
+        <div class="card" style="max-width: 700px; width: 90%; margin: 2rem auto; max-height: 90vh; overflow-y: auto;">
+            <h2 class="card-title"><span data-translate="update_grievance">Update Grievance</span> #<span id="modalGrievanceId"></span></h2>
+            
+            <form id="updateForm">
+                <div class="form-group">
+                    <label class="form-label" for="status" data-translate="status">Status</label>
+                    <select id="status" class="form-select" required>
+                        <option value="" data-translate="select_status">Select Status</option>
+                        <option value="Under Progress" data-translate="under_progress">Under Progress</option>
+                        <option value="Investigation" data-translate="investigation">Investigation</option>
+                        <option value="Reviewed" data-translate="reviewed">Reviewed</option>
+                        <option value="Resolved" data-translate="resolved">Resolved</option>
+                        <option value="Closed" data-translate="closed">Closed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="message" data-translate="update_message">Update Message</label>
+                    <textarea id="message" class="form-textarea" rows="4" 
+                        data-translate="update_details_placeholder" placeholder="Provide details about this update" required></textarea>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-success" data-translate="submit_update">Submit Update</button>
+                    <button type="button" id="closeModalBtn" class="btn btn-secondary" data-translate="cancel">Cancel</button>
+                </div>
+            </form>
+
+            <!-- Comments Section in Modal -->
+            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border-color);">
+            
+            <h3 style="margin-bottom: 1rem;" data-translate="comments_and_feedback">Comments & Feedback</h3>
+            
+            <!-- Add Comment -->
+            <div class="form-group">
+                <label class="form-label" for="modalCommentText" data-translate="add_comment">Add Comment</label>
+                <textarea id="modalCommentText" class="form-textarea" rows="3" 
+                    data-translate="type_comment_placeholder" placeholder="Type your response or feedback..."></textarea>
+            </div>
+            <button id="modalAddCommentBtn" class="btn btn-primary" style="margin-bottom: 1.5rem;" data-translate="post_comment">Post Comment</button>
+
+            <!-- Comments List -->
+            <div id="modalCommentsList">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="translations.js"></script>
+    <script>
+        if (!checkAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        const user = getUser();
+        if (user.role !== 'OFFICER') {
+            showAlert('Access denied. Officers only.', 'error');
+            setTimeout(() => window.location.href = user.role === 'ADMIN' ? 'admin.html' : 'index.html', 2000);
+        }
+
+        let currentGrievanceId = null;
+
+        // Set department name
+        document.getElementById('departmentName').textContent = user.department;
+
+        // Load department grievances
+        async function loadGrievances() {
+            try {
+                const data = await apiCall(`/grievances/department/${encodeURIComponent(user.department)}`);
+                const grievancesList = document.getElementById('grievancesList');
+                const grievances = data.grievances || [];
+
+                if (grievances.length === 0) {
+                    grievancesList.innerHTML = '<p style="color: var(--text-secondary);">No grievances assigned to your department yet.</p>';
+                    return;
+                }
+
+                grievancesList.innerHTML = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Complaint</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${grievances.map(g => `
+                                    <tr>
+                                        <td>#${g.id}</td>
+                                        <td style="max-width: 300px;">
+                                            <div style="margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                ${escapeHtml(g.complaint_text)}
+                                            </div>
+                                            <button onclick="showTranslationModal('${g.complaint_text.replace(/'/g, "\\'")}', getCurrentLanguage())" 
+                                                    class="translate-btn" 
+                                                    style="padding: 4px 10px; font-size: 12px;">
+                                                <span class="translate-icon">🌐</span>
+                                                <span class="translate-text">Translate</span>
+                                            </button>
+                                        </td>
+                                        <td>${g.location || '-'}</td>
+                                        <td>${renderStatusBadge(g.status)}</td>
+                                        <td>${formatDate(g.created_at)}</td>
+                                        <td>
+                                            <button onclick="openUpdateModal(${g.id})" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Update</button>
+                                            <a href="track.html?id=${g.id}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-left: 0.5rem;">View</a>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('grievancesList').innerHTML = 
+                    `<p class="alert alert-error">${error.message}</p>`;
+            }
+        }
+
+        // Load comments in modal
+        async function loadModalComments() {
+            try {
+                const data = await apiCall(`/grievances/${currentGrievanceId}/comments`);
+                const commentsList = document.getElementById('modalCommentsList');
+
+                if (data.comments.length === 0) {
+                    commentsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No comments yet.</p>';
+                    return;
+                }
+
+                const commentsHtml = data.comments.map(comment => {
+                    const isOfficer = comment.user_role === 'OFFICER' || comment.user_role === 'ADMIN';
+                    const bgColor = isOfficer ? '#e0e7ff' : '#f3f4f6';
+                    const borderColor = isOfficer ? '#4338ca' : '#9ca3af';
+                    const roleColor = isOfficer ? '#4338ca' : '#6b7280';
+                    
+                    return `
+                        <div style="background: ${bgColor}; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${borderColor}; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div>
+                                    <strong style="color: var(--text-primary);">${escapeHtml(comment.user_name)}</strong>
+                                    <span class="badge" style="margin-left: 0.5rem; background: ${roleColor}; color: white; font-size: 0.75rem;">${comment.user_role}</span>
+                                </div>
+                                <span style="font-size: 0.875rem; color: var(--text-secondary);">${formatDate(comment.created_at)}</span>
+                            </div>
+                            <p style="margin: 0; color: var(--text-primary); line-height: 1.6;">${escapeHtml(comment.comment_text)}</p>
+                        </div>
+                    `;
+                }).join('');
+
+                commentsList.innerHTML = commentsHtml;
+            } catch (error) {
+                document.getElementById('modalCommentsList').innerHTML = 
+                    `<p style="color: var(--danger-color);">${error.message}</p>`;
+            }
+        }
+
+        // Open update modal
+        window.openUpdateModal = function(grievanceId) {
+            currentGrievanceId = grievanceId;
+            document.getElementById('modalGrievanceId').textContent = grievanceId;
+            document.getElementById('updateModal').classList.remove('hidden');
+            document.getElementById('updateModal').style.display = 'flex';
+            loadModalComments();
+        };
+
+        // Close modal
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('updateModal').classList.add('hidden');
+            document.getElementById('updateModal').style.display = 'none';
+            document.getElementById('updateForm').reset();
+            document.getElementById('modalCommentText').value = '';
+        });
+
+        // Add comment in modal
+        document.getElementById('modalAddCommentBtn').addEventListener('click', async () => {
+            const commentText = document.getElementById('modalCommentText').value.trim();
+
+            if (!commentText || commentText.length < 5) {
+                showAlert('Comment must be at least 5 characters long', 'error');
+                return;
+            }
+
+            try {
+                await apiCall(`/grievances/${currentGrievanceId}/comments`, {
+                    method: 'POST',
+                    body: JSON.stringify({ comment_text: commentText })
+                });
+
+                showAlert('Comment posted successfully!', 'success');
+                document.getElementById('modalCommentText').value = '';
+                loadModalComments();
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        // Submit update
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const status = document.getElementById('status').value;
+            const message = document.getElementById('message').value;
+
+            if (!status || !message) {
+                showAlert('Please fill all fields', 'error');
+                return;
+            }
+
+            try {
+                await apiCall(`/grievances/${currentGrievanceId}/update`, {
+                    method: 'POST',
+                    body: JSON.stringify({ status, message })
+                });
+
+                showAlert('Grievance updated successfully!', 'success');
+                
+                // Close modal
+                document.getElementById('updateModal').classList.add('hidden');
+                document.getElementById('updateModal').style.display = 'none';
+                document.getElementById('updateForm').reset();
+                
+                // Reload grievances
+                loadGrievances();
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        // Load grievances on page load
+        loadGrievances();
+
+        // Auto-refresh every 60 seconds
+        setInterval(loadGrievances, 60000);
+    </script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+    <script src="complaint-translator.js"></script>
+</body>
+</html>

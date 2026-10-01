@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Smart Grievance Redressal System | Government of India</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <link rel="stylesheet" href="css/index-page.css">
+    <link rel="stylesheet" href="css/chatbot.css">
+    <!-- Leaflet.js map -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" crossorigin="">
+
+</head>
+<body>
+    <!-- Government Header / Navbar -->
+    <header class="gov-header">
+        <div class="gov-header-content">
+
+            <!-- Left: Logo + Title -->
+            <div class="gov-logo-section">
+                <img src="logo.svg" alt="Smart Grievance System Logo" class="gov-logo-img">
+                <div class="gov-title">
+                    <h1 data-translate="app_name">Smart Grievance System</h1>
+                    <p>Government of India &nbsp;|&nbsp; Digital India Initiative</p>
+                </div>
+            </div>
+
+            <!-- Centre: Nav links -->
+            <nav class="gov-nav" aria-label="Main navigation">
+                <a href="index.html" class="gov-nav-link active" data-translate="nav_home">🏠 Home</a>
+                <a href="track.html" class="gov-nav-link" data-translate="nav_track">🔍 Track Grievance</a>
+                <a href="public-dashboard.html" class="gov-nav-link" data-translate="nav_dashboard">📊 Dashboard</a>
+            </nav>
+
+            <!-- Right: User info + actions -->
+            <div class="header-actions">
+                <span id="userWelcome" class="user-welcome"></span>
+                <a href="profile.html" class="btn btn-outline-white" data-translate="profile">👤 My Profile</a>
+                <button id="logoutBtn" class="btn btn-danger-outline" data-translate="logout">⏻ Logout</button>
+            </div>
+
+            <!-- Mobile hamburger -->
+            <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <!-- Mobile nav drawer -->
+        <nav class="gov-nav-mobile" id="mobileNav" aria-label="Mobile navigation">
+            <a href="index.html" class="gov-nav-link active">🏠 Home</a>
+            <a href="track.html" class="gov-nav-link">🔍 Track Grievance</a>
+            <a href="public-dashboard.html" class="gov-nav-link">📊 Dashboard</a>
+            <a href="profile.html" class="gov-nav-link">👤 My Profile</a>
+            <hr style="border-color:rgba(255,255,255,0.2); margin: 4px 16px;">
+            <button id="logoutBtnMobile" class="gov-nav-link logout-mobile">⏻ Logout</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h2 data-translate="welcome_hero">Welcome to Smart Grievance Portal</h2>
+            <p data-translate="hero_description">Submit your complaints online and track their resolution in real-time. Our AI-powered system ensures your grievance reaches the right department instantly.</p>
+        </div>
+    </section>
+
+    <!-- Statistics Bar -->
+    <div class="stats-bar">
+        <div class="stats-content">
+            <div class="stat-item">
+                <span class="stat-number" id="totalGrievances">0</span>
+                <span class="stat-label" data-translate="total_grievances">Total Grievances</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="resolvedGrievances">0</span>
+                <span class="stat-label" data-translate="resolved">Resolved</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="pendingGrievances">0</span>
+                <span class="stat-label" data-translate="in_progress">In Progress</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="avgResolutionTime">0</span>
+                <span class="stat-label" data-translate="avg_resolution">Avg. Resolution (days)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Resolved Cases Showcase -->
+        <section class="section">
+            <h2 class="section-title" data-translate="recently_resolved_cases">Recently Resolved Cases</h2>
+            <p style="color: #64748b; margin-bottom: 20px;" data-translate="resolved_cases_desc">See how we've helped citizens resolve their grievances across India</p>
+            
+            <div class="cases-grid" id="resolvedCasesGrid">
+                <!-- Cases will be loaded here dynamically -->
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+        <!-- Submit New Grievance -->
+        <section class="section">
+            <h2 class="section-title" data-translate="submit_new_grievance">Submit New Grievance</h2>
+            
+            <!-- Alert -->
+            <div id="alertBox" class="alert"></div>
+
+            <!-- Verification Notice -->
+            <div class="notice-box info">
+                <div class="notice-title">Submit Your Grievance</div>
+                <div class="notice-text">
+                    Fill in your complaint details below. Our AI will automatically route it to the right department for prompt resolution.
+                </div>
+            </div>
+
+            <form id="grievanceForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="complaint_details">Complaint Details</span> <span class="required">*</span>
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <textarea id="complaint" class="form-textarea" 
+                            data-translate="describe_complaint_placeholder" placeholder="Describe your complaint in detail (minimum 20 characters)" 
+                            required minlength="20"></textarea>
+                    </div>
+                    <small class="form-hint" data-translate="complaint_hint">Our AI will automatically assign your complaint to the appropriate department.</small>
+                    <small id="predictedDepartmentHint" class="form-hint" style="display: none;"></small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="complaint_location">Complaint Location</span>
+                        <span style="font-size:12px; color:#64748b; font-weight:400;"> (optional)</span>
+                    </label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="location" class="form-input" 
+                            placeholder="Enter location or use the map to pin it"
+                            >
+                        <button type="button" id="mapToggleBtn" class="btn btn-secondary" style="white-space: nowrap;" aria-label="Open map to pick location">📍 Pick on Map</button>
+                    </div>
+                    <small class="form-hint">Type a location or click "📍 Pick on Map" to pin it visually. You can also drag the marker to adjust.</small>
+
+                    <!-- Leaflet map picker -->
+                    <div id="locationMapWrapper" style="display: none;" class="location-map-wrapper">
+                        <div id="locationMap" class="location-map" style="height:320px;width:100%;" aria-label="Map to select complaint location" role="application"></div>
+                        <p class="map-hint">Click anywhere on the map to pin the complaint location. Drag the marker to adjust.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span data-translate="upload_evidence">Upload Evidence Images</span> <span style="font-size:12px; color:#64748b; font-weight:400;"> (optional)</span>
+                    </label>
+                    
+                    <div id="imageDropZone" class="image-upload-zone required-upload" role="button" tabindex="0" aria-label="Upload complaint evidence images">
+                        <div class="upload-icon">📸</div>
+                        <p style="font-weight: 600; color: #1e3a8a; margin-bottom: 5px;" data-translate="drag_drop">Click to upload or drag and drop</p>
+                        <p style="font-size: 13px; color: #64748b;" data-translate="image_limits">PNG, JPG, JPEG up to 5MB each (Max 5 images)</p>
+                        <p id="imageRequirementHint" style="font-size: 12px; color: #64748b; margin-top: 10px;" data-translate="optional_image_hint">Images are optional but help with faster verification.</p>
+                    </div>
+                    <input type="file" id="complaintImages" accept="image/*" multiple style="display: none;">
+                    
+                    <div id="imagePreviewContainer" class="image-preview-grid" style="display: none;"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;" data-translate="submit_grievance">
+                    Submit Grievance
+                </button>
+            </form>
+        </section>
+
+        <!-- My Grievances -->
+        <section class="section">
+            <h2 class="section-title" data-translate="my_grievances">My Grievances</h2>
+            
+            <div id="grievancesList">
+                <div class="spinner"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== Floating AI Chatbot Widget ===== -->
+    <!-- FAB button -->
+    <button id="chatbot-fab" aria-label="Open AI chatbot assistant" title="Ask our AI Assistant">
+        <span class="fab-icon">🤖</span>
+    </button>
+
+    <!-- Chat panel -->
+    <div id="chatbot-panel" role="dialog" aria-label="AI Grievance Assistant" aria-modal="true">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-header-avatar">🤖</div>
+            <div class="chatbot-header-info">
+                <h4>AI Grievance Assistant</h4>
+                <p>Powered by Gemini · Smart Grievance System</p>
+            </div>
+            <div class="chatbot-header-status">Online</div>
+            <button class="chatbot-close-btn" id="chatbot-close-btn" aria-label="Close chatbot">×</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="chatbot-messages" id="chatbot-messages" aria-live="polite" aria-atomic="false"></div>
+
+        <!-- Suggestion chips -->
+        <div class="chat-suggestions" id="chatbot-suggestions" style="display:none;"></div>
+
+        <!-- Input -->
+        <div class="chatbot-input-area">
+            <textarea
+                id="chatbot-input"
+                rows="1"
+                placeholder="Ask about water connection, registration forms…"
+                aria-label="Type your question"
+                autocomplete="off"
+                maxlength="1000"
+            ></textarea>
+            <button id="chatbot-send-btn" aria-label="Send message">➤</button>
+        </div>
+    </div>
+    <!-- ===== /Floating AI Chatbot Widget ===== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin=""></script>
+    <script src="runtime-config.js"></script>
+    <script src="app.js"></script>
+    <script src="language-config.js"></script>
+    <script src="department-image-requirements.js"></script>
+    <script src="js/pages/index-dashboard.js"></script>
+    <script src="js/pages/index-form.js"></script>
+    <script src="js/pages/index-page.js"></script>
+    <script src="translations.js"></script>
+    <script src="government-portal-init.js"></script>
+    <script src="simple-translator.js"></script>
+    <script src="language-selector-widget.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+</html>

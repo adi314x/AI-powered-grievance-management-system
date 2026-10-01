@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Language - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, 
+                rgba(255, 153, 51, 0.1) 0%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(19, 136, 8, 0.1) 100%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                #FF9933 0%, #FF9933 33%, 
+                #FFFFFF 33%, #FFFFFF 66%, 
+                #138808 66%, #138808 100%);
+            z-index: 1000;
+        }
+
+        .language-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .language-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .language-header {
+            background: linear-gradient(135deg, #003DA5 0%, #001F52 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .language-header::before {
+            content: '🇮🇳';
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .language-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .language-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .language-body {
+            padding: 40px;
+        }
+
+        .language-intro {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .language-intro h2 {
+            color: #1F2937;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .language-intro p {
+            color: #6B7280;
+            font-size: 1rem;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .language-option {
+            padding: 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.02) 0%, white 100%);
+        }
+
+        .language-option:hover {
+            border-color: #FF9933;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(255, 153, 51, 0.2);
+        }
+
+        .language-option.selected {
+            border-color: #FF9933;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.1) 0%, white 100%);
+            box-shadow: 0 4px 12px rgba(255, 153, 51, 0.3);
+        }
+
+        .language-flag {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .language-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 5px;
+        }
+
+        .language-native {
+            font-size: 0.9rem;
+            color: #6B7280;
+        }
+
+        .continue-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .continue-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 153, 51, 0.3);
+        }
+
+        .continue-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .skip-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .skip-link a {
+            color: #6B7280;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .skip-link a:hover {
+            color: #FF9933;
+        }
+
+        @media (max-width: 600px) {
+            .language-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .language-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .language-body {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-container">
+        <div class="language-card">
+            <div class="language-header">
+                <h1>Smart Grievance System</h1>
+                <p>स्मार्ट शिकायत प्रणाली | স্মার্ট অভিযোগ সিস্টেম</p>
+            </div>
+
+            <div class="language-body">
+                <div class="language-intro">
+                    <h2>Choose Your Language</h2>
+                    <p>Select your preferred language to continue</p>
+                </div>
+
+                <div class="language-grid" id="languageGrid">
+                    <!-- Languages will be loaded here -->
+                </div>
+
+                <button class="continue-btn" id="continueBtn" disabled>
+                    Continue to Portal
+                </button>
+
+                <div class="skip-link">
+                    <a href="login.html">Skip (Use English)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="language-config.js"></script>
+    <script>
+        const languages = (typeof getPortalLanguages === 'function')
+            ? getPortalLanguages().map((lang) => ({
+                code: lang.code,
+                name: lang.name,
+                native: lang.nativeName,
+                flag: lang.flag
+            }))
+            : [
+                { code: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
+                { code: 'hi', name: 'Hindi', native: 'हिंदी', flag: '🇮🇳' },
+                { code: 'bn', name: 'Bengali', native: 'বাংলা', flag: '🇮🇳' },
+                { code: 'ta', name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+                { code: 'te', name: 'Telugu', native: 'తెలుగు', flag: '🇮🇳' },
+                { code: 'mr', name: 'Marathi', native: 'मराठी', flag: '🇮🇳' },
+                { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', flag: '🇮🇳' },
+                { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', flag: '🇮🇳' },
+                { code: 'ml', name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' },
+                { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
+                { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ', flag: '🇮🇳' },
+                { code: 'ur', name: 'Urdu', native: 'اردو', flag: '🇮🇳' }
+            ];
+
+        let selectedLanguage = null;
+
+        function renderLanguages() {
+            const grid = document.getElementById('languageGrid');
+            
+            grid.innerHTML = languages.map(lang => `
+                <div class="language-option" data-code="${lang.code}" onclick="selectLanguage('${lang.code}')">
+                    <div class="language-flag">${lang.flag}</div>
+                    <div class="language-name">${lang.name}</div>
+                    <div class="language-native">${lang.native}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectLanguage(code) {
+            selectedLanguage = code;
+            
+            // Update UI
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            document.querySelector(`[data-code="${code}"]`).classList.add('selected');
+            
+            // Enable continue button
+            document.getElementById('continueBtn').disabled = false;
+        }
+
+        function continueToPortal() {
+            if (!selectedLanguage) return;
+            
+            // Save language preference
+            localStorage.setItem('preferredLanguage', selectedLanguage);
+            
+            // Redirect to login
+            window.location.href = 'login.html';
+        }
+
+        // Event listeners
+        document.getElementById('continueBtn').addEventListener('click', continueToPortal);
+
+        // Check if language already selected
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage) {
+            // Auto-redirect if language already set
+            // window.location.href = 'login.html';
+        }
+
+        // Render languages on load
+        renderLanguages();
+
+        // Auto-select English by default
+        selectLanguage('en');
+    </script>
+    <script src="language-selector-widget.js"></script>
+</body>
+</html>

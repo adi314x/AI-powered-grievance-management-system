@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Dashboard - Smart Grievance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="government-portal-theme.css">
+    <link rel="stylesheet" href="improved-contrast.css">
+    <script src="runtime-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="gov-header" style="padding: 15px 20px;">
+        <div class="gov-header-content">
+            <h1 data-translate="public_dashboard_title">🇮🇳 Smart Grievance System - Public Dashboard</h1>
+            <a href="index.html" class="btn btn-primary" data-translate="file_complaint">File a Complaint</a>
+        </div>
+    </header>
+
+    <div class="container" style="max-width: 1200px; margin: 2rem auto; padding: 0 20px;">
+        <div class="card" style="text-align: center; margin-bottom: 2rem;">
+            <h2 data-translate="transparent_stats">Transparent Grievance Statistics</h2>
+            <p style="color: var(--text-secondary);" data-translate="realtime_data_desc">Real-time aggregated data. No login required.</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="stat-card">
+                <div class="stat-label" data-translate="total_complaints">Total Complaints</div>
+                <div class="stat-value" id="totalGrievances">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-translate="resolved">Resolved</div>
+                <div class="stat-value" id="resolvedCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-translate="pending">Pending</div>
+                <div class="stat-value" id="pendingCount">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-translate="resolution_rate">Resolution Rate</div>
+                <div class="stat-value" id="resolutionRate">-</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 data-translate="by_department">By Department</h3>
+            <canvas id="deptChart" height="80"></canvas>
+        </div>
+
+        <div class="card">
+            <h3 data-translate="dept_breakdown">Department-wise Breakdown</h3>
+            <div id="deptList"></div>
+        </div>
+    </div>
+
+    <script>
+        function resolvePublicApiUrl(path) {
+            if (typeof resolveApiUrl === 'function') {
+                return resolveApiUrl(path);
+            }
+            return path;
+        }
+
+        async function loadPublicStats() {
+            try {
+                const res = await fetch(resolvePublicApiUrl('/api/public/stats'));
+                const data = await res.json();
+                
+                document.getElementById('totalGrievances').textContent = data.total_grievances ?? 0;
+                document.getElementById('resolvedCount').textContent = data.resolved ?? 0;
+                document.getElementById('pendingCount').textContent = data.pending ?? 0;
+                document.getElementById('resolutionRate').textContent = (data.resolution_rate ?? 0) + '%';
+
+                const depts = data.by_department || {};
+                const entries = Object.entries(depts).sort((a,b) => b[1]-a[1]);
+                
+                document.getElementById('deptList').innerHTML = entries.map(([dept, count]) => `
+                    <div class="stat-card" style="display: flex; justify-content: space-between; padding: 0.75rem 1rem;">
+                        <span>${escapeHtml(dept)}</span>
+                        <span style="font-weight: 700; color: var(--primary-color);">${count}</span>
+                    </div>
+                `).join('') || '<p>No data yet</p>';
+
+                if (entries.length > 0 && typeof Chart !== 'undefined') {
+                    new Chart(document.getElementById('deptChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: entries.map(([d]) => d),
+                            datasets: [{ label: 'Complaints', data: entries.map(([,c]) => c), backgroundColor: '#3B82F6' }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+                }
+            } catch (e) {
+                document.getElementById('statsGrid').innerHTML = '<p>Unable to load statistics</p>';
+            }
+        }
+        loadPublicStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+/**
+ * Professional Government Portal Theme
+ * Inspired by Aadhaar, DigiLocker, and other Indian government portals
+ */
+
+/* Clean, professional background */
+body {
+    background: #f4f6fa;
+    position: relative;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #111827; /* Stronger base text color */
+}
+
+/* Government portal header strip */
+.govt-header-strip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        #FF9933 0%, 
+        #FF9933 33.33%, 
+        #FFFFFF 33.33%, 
+        #FFFFFF 66.66%, 
+        #138808 66.66%, 
+        #138808 100%
+    );
+    z-index: 10001;
+}
+
+/* Ashoka Chakra inspired subtle pattern */
+.govt-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    opacity: 0.02;
+    background-image: 
+        radial-gradient(circle at 50% 50%, #003DA5 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+}
+
+/* Professional card styling */
+.card {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+.card:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 40px rgba(0, 61, 165, 0.12) !important;
+    border-color: rgba(255, 153, 51, 0.3) !important;
+}
+
+/* Header styling - Government portal style */
+.header {
+    background: rgba(0, 61, 165, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-bottom: 4px solid #FF9933 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    position: sticky !important;
+    top: 4px;
+    z-index: 1000;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #138808;
+}
+
+/* Government emblem style corner decoration */
+.govt-corner-decoration {
+    position: fixed;
+    width: 150px;
+    height: 150px;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.govt-corner-decoration.top-left {
+    top: 80px;
+    left: 0;
+    background: radial-gradient(circle at top left, #FF9933 0%, transparent 70%);
+}
+
+.govt-corner-decoration.top-right {
+    top: 80px;
+    right: 0;
+    background: radial-gradient(circle at top right, #138808 0%, transparent 70%);
+}
+
+.govt-corner-decoration.bottom-left {
+    bottom: 0;
+    left: 0;
+    background: radial-gradient(circle at bottom left, #003DA5 0%, transparent 70%);
+}
+
+.govt-corner-decoration.bottom-right {
+    bottom: 0;
+    right: 0;
+    background: radial-gradient(circle at bottom right, #FF9933 0%, transparent 70%);
+}
+
+/* Digital India inspired footer strip */
+.govt-footer-strip {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        #003DA5 0%, 
+        #0052CC 50%, 
+        #003DA5 100%
+    );
+    z-index: 10000;
+}
+
+/* Remove department showcase elements for cleaner look */
+.department-showcase,
+.department-icons-bg,
+.dept-of-day {
+    display: none !important;
+}
+
+/* Professional button styling */
+.btn {
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FF9933 0%, #138808 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3) !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #FF8C00 0%, #107006 100%) !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(255, 153, 51, 0.4) !important;
+}
+
+.btn-secondary {
+    background: white !important;
+    border: 2px solid #003DA5 !important;
+    color: #003DA5 !important;
+}
+
+.btn-secondary:hover {
+    background: #003DA5 !important;
+    color: white !important;
+}
+
+/* Form styling - Government portal style */
+.form-input,
+.form-textarea,
+.form-select {
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    font-size: 15px !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    border-color: #003DA5 !important;
+    box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.15) !important;
+    outline: none !important;
+    background: white !important;
+}
+
+.form-label {
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+
+table td, table th {
+    color: #111827 !important;
+}
+
+/* Badge styling */
+.badge {
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* Container styling */
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Login/Register page specific */
+.login-card,
+.register-card {
+    background: white !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Table styling */
+table {
+    background: white !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+table thead {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%) !important;
+}
+
+table th {
+    color: #1F2937 !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #003DA5 !important;
+}
+
+table td {
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+table tr:hover {
+    background: #f9fafb !important;
+}
+
+/* Government portal info banner */
+.govt-info-banner {
+    background: linear-gradient(135deg, #FFF4E6 0%, #FFE8CC 100%);
+    border-left: 4px solid #FF9933;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #7C2D12;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.govt-info-banner::before {
+    content: '🇮🇳';
+    font-size: 24px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .govt-corner-decoration {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .govt-header-strip,
+    .govt-footer-strip,
+    .govt-corner-decoration,
+    .govt-pattern {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000 !important;
+    }
+    
+    .btn {
+        border: 2px solid #000 !important;
+    }
+}

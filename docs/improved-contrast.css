@@ -1,0 +1,410 @@
+/**
+ * Improved Contrast and Readability
+ * Makes text darker and more visible
+ */
+
+/* Darker, more readable text colors */
+:root {
+    --text-primary: #1a1a1a !important;
+    --text-secondary: #4a4a4a !important;
+    --text-tertiary: #666666 !important;
+}
+
+/* Body text - much darker */
+body {
+    color: #1a1a1a !important;
+    font-weight: 400 !important;
+}
+
+/* All paragraphs and text */
+p, span, div, li, td {
+    color: #1a1a1a !important;
+}
+
+/* Headings - very dark and bold */
+h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+.card-title {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Labels and small text */
+label, .form-label, .stat-label {
+    color: #2d2d2d !important;
+    font-weight: 600 !important;
+}
+
+/* Input fields - darker text */
+input, textarea, select, .form-input, .form-textarea, .form-select {
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+}
+
+/* Table text */
+table th {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+table td {
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+/* Button text */
+.btn {
+    font-weight: 700 !important;
+}
+
+.btn-primary {
+    color: #ffffff !important;
+}
+
+.btn-secondary {
+    color: #003DA5 !important;
+}
+
+/* Badge text */
+.badge {
+    font-weight: 700 !important;
+    color: #ffffff !important;
+}
+
+/* Alert text */
+.alert {
+    font-weight: 600 !important;
+}
+
+.alert-success {
+    color: #0f5132 !important;
+    background: #d1e7dd !important;
+    border-color: #badbcc !important;
+}
+
+.alert-error {
+    color: #842029 !important;
+    background: #f8d7da !important;
+    border-color: #f5c2c7 !important;
+}
+
+.alert-warning {
+    color: #664d03 !important;
+    background: #fff3cd !important;
+    border-color: #ffecb5 !important;
+}
+
+.alert-info {
+    color: #055160 !important;
+    background: #cff4fc !important;
+    border-color: #b6effb !important;
+}
+
+/* Stat values - darker and bolder */
+.stat-value {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Links - darker blue */
+a {
+    color: #0052CC !important;
+    font-weight: 600 !important;
+}
+
+a:hover {
+    color: #003DA5 !important;
+}
+
+/* Comment text */
+.comment-text-original,
+.comment-text-translated {
+    color: #1a1a1a !important;
+}
+
+/* Timeline text */
+.timeline-item {
+    color: #1a1a1a !important;
+}
+
+/* Status badges - ensure white text on colored backgrounds */
+.badge.pending {
+    background: #FFA500 !important;
+    color: #ffffff !important;
+}
+
+.badge.received {
+    background: #3B82F6 !important;
+    color: #ffffff !important;
+}
+
+.badge.assigned {
+    background: #8B5CF6 !important;
+    color: #ffffff !important;
+}
+
+.badge.in-progress,
+.badge.under-progress {
+    background: #F59E0B !important;
+    color: #ffffff !important;
+}
+
+.badge.investigation {
+    background: #EF4444 !important;
+    color: #ffffff !important;
+}
+
+.badge.reviewed {
+    background: #10B981 !important;
+    color: #ffffff !important;
+}
+
+.badge.resolved {
+    background: #059669 !important;
+    color: #ffffff !important;
+}
+
+.badge.closed {
+    background: #6B7280 !important;
+    color: #ffffff !important;
+}
+
+.badge.verified {
+    background: #10B981 !important;
+    color: #ffffff !important;
+}
+
+/* Card content */
+.card {
+    color: #1a1a1a !important;
+}
+
+.card p {
+    color: #2d2d2d !important;
+    line-height: 1.8 !important;
+}
+
+/* Info items */
+.info-label {
+    color: #2d2d2d !important;
+    font-weight: 600 !important;
+}
+
+.info-value {
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+/* Dropdown text */
+select option {
+    color: #1a1a1a !important;
+}
+
+/* Modal text */
+.modal-content {
+    color: #1a1a1a !important;
+}
+
+.modal-title {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Notification text */
+.notification-item {
+    color: #1a1a1a !important;
+}
+
+.notification-title {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Department labels */
+.department-label {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Complaint text */
+.complaint-text {
+    color: #1a1a1a !important;
+    line-height: 1.8 !important;
+    font-weight: 500 !important;
+}
+
+/* Officer information */
+.officer-info {
+    color: #1a1a1a !important;
+}
+
+.officer-name {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Timeline status */
+.timeline-status {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+.timeline-message {
+    color: #2d2d2d !important;
+    font-weight: 500 !important;
+}
+
+/* Form validation messages */
+.error-message {
+    color: #DC2626 !important;
+    font-weight: 600 !important;
+}
+
+.success-message {
+    color: #059669 !important;
+    font-weight: 600 !important;
+}
+
+/* User info in header */
+.user-info {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    color: #2d2d2d !important;
+}
+
+.breadcrumb a {
+    color: #0052CC !important;
+}
+
+/* Footer text */
+.footer {
+    color: #2d2d2d !important;
+}
+
+/* Ensure all text is readable on light backgrounds */
+[style*="background: #f"] *,
+[style*="background: white"] *,
+[style*="background: #fff"] * {
+    color: #1a1a1a !important;
+}
+
+/* Specific fixes for common patterns */
+small {
+    color: #4a4a4a !important;
+    font-weight: 500 !important;
+}
+
+strong, b {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Translation text */
+.translated-text {
+    color: #1a1a1a !important;
+    font-weight: 600 !important;
+}
+
+.translation-lang-badge {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* Complainant information */
+.complainant-info {
+    color: #1a1a1a !important;
+}
+
+.complainant-info strong {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Location text */
+.location-text {
+    color: #2d2d2d !important;
+    font-weight: 500 !important;
+}
+
+/* Image captions */
+.image-caption {
+    color: #2d2d2d !important;
+    font-weight: 600 !important;
+}
+
+/* Keep contrast improvements without forcing a global flat page background. */
+
+.card {
+    background: #ffffff !important;
+}
+
+/* Ensure proper contrast for all interactive elements */
+button, .btn {
+    font-weight: 700 !important;
+}
+
+/* Make sure secondary text is still readable but distinct */
+.text-secondary {
+    color: #4a4a4a !important;
+}
+
+.text-muted {
+    color: #666666 !important;
+}
+
+/* Improve readability of dates and timestamps */
+.timestamp, .date {
+    color: #2d2d2d !important;
+    font-weight: 500 !important;
+}
+
+/* Dashboard stats */
+.stat-number {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+.stat-label {
+    color: #2d2d2d !important;
+    font-weight: 600 !important;
+}
+
+/* Improve contrast for disabled elements */
+input:disabled,
+textarea:disabled,
+select:disabled {
+    color: #666666 !important;
+    background: #f5f5f5 !important;
+}
+
+/* Make sure all content is readable */
+.content {
+    color: #1a1a1a !important;
+}
+
+/* Improve visibility of placeholder text */
+::placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+}
+
+/* Better contrast for focus states */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #003DA5 !important;
+    box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.2) !important;
+}
