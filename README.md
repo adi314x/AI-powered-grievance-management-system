@@ -1,7 +1,7 @@
 # 🚀 Public Service Operations Platform
 ### AI-Powered Case Management & Smart Grievance Redressal
 
-[![CI](https://github.com/Santhakumarramesh/smart-grievance-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Santhakumarramesh/smart-grievance-system/actions/workflows/ci.yml)
+[![CI](https://github.com/adi314x/AI-powered-grievance-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/adi314x/AI-powered-grievance-management-system/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **"Built a production-oriented public service operations platform with ML-assisted routing, SLA enforcement, fraud lifecycle management, and multilingual UI, supporting role-based workflows for citizens, officers, and administrators."**
@@ -170,8 +170,8 @@ Resolution → Citizen Notification
 
 1. **Clone & Setup**:
    ```bash
-   git clone https://github.com/Santhakumarramesh/smart-grievance-system.git
-   cd smart-grievance-system
+   git clone https://github.com/adi314x/AI-powered-grievance-management-system.git
+   cd AI-powered-grievance-management-system
    python -m venv .venv
    ```
    Activate the environment (`.venv\Scripts\Activate.ps1` in Windows PowerShell, or `source .venv/bin/activate` on macOS/Linux), then install dependencies:
