@@ -76,7 +76,7 @@ Resolution → Citizen Notification
 ### 🛠️ Tech Stack (Specific)
 - **Backend**: Flask, SQLAlchemy, JWT, Pytz (Timezone handling), Bleach (XSS Sanitization).
 - **ML/AI**: scikit-learn (TF-IDF + Logistic Regression), manual triage fallback.
-- **Frontend**: Vanilla JS (Modular ESM), CSS (Rich/Premium Aesthetics).
+- **Frontend**: Vanilla JS, Bootstrap 5, Tabler Icons, Chart.js, and a shared responsive design system.
 - **Infra/CI**: Render Dashboard, GitHub Actions CI, PostgreSQL.
 - **Security**: IP-based rate limiting, input validation, SQL injection prevention.
 
@@ -147,6 +147,7 @@ Resolution → Citizen Notification
 ## 🚀 Deployment
 
 - **Frontend**: Hosted effortlessly on GitHub Pages (`docs/` directory acting as a mirror).
+- UI framework, icon, and chart assets are served locally from `frontend/vendor/` and `docs/vendor/`; the public dashboard does not require a Chart.js CDN connection.
 - **Backend**: Hosted on Render (API Services).
 - **Architecture Note**: Full platform functionality requires both services to be running and correctly cross-wired using the CORS configurations defined in `runtime-config.js`.
 

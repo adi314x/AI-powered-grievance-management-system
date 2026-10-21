@@ -36,3 +36,26 @@ def test_docs_runtime_config_present():
     runtime_config = _read(DOCS_DIR / "runtime-config.js")
     assert "getApiBaseUrl" in runtime_config
     assert "resolveApiUrl" in runtime_config
+
+
+def test_live_and_demo_pages_load_local_design_assets():
+    pages = set(FRONTEND_DIR.glob("*.html"))
+    assert pages
+
+    for page in pages:
+        for root in (FRONTEND_DIR, DOCS_DIR):
+            counterpart = root / page.name
+            content = _read(counterpart)
+            assert 'vendor/bootstrap/bootstrap.min.css' in content
+            assert 'vendor/tabler/tabler-icons.min.css' in content
+            assert 'design-system.css' in content
+            assert 'vendor/bootstrap/bootstrap.bundle.min.js' in content
+
+    for root in (FRONTEND_DIR, DOCS_DIR):
+        assert (root / "design-system.css").is_file()
+        assert (root / "vendor/bootstrap/bootstrap.min.css").is_file()
+        assert (root / "vendor/tabler/fonts/tabler-icons.woff2").is_file()
+        assert (root / "vendor/chartjs/chart.umd.min.js").is_file()
+        assert 'https://cdn.jsdelivr.net/npm/chart.js' not in _read(root / "public-dashboard.html")
+
+    assert _read(FRONTEND_DIR / "design-system.css") == _read(DOCS_DIR / "design-system.css")

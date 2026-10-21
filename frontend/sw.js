@@ -1,5 +1,5 @@
 /* Service Worker - PWA Offline Support */
-const CACHE_NAME = 'grievance-v2';
+const CACHE_NAME = 'grievance-v3';
 const STATIC_CACHE = [
   '/',
   '/index.html',
@@ -8,6 +8,12 @@ const STATIC_CACHE = [
   '/app.js',
   '/government-portal-theme.css',
   '/improved-contrast.css',
+  '/design-system.css',
+  '/vendor/bootstrap/bootstrap.min.css',
+  '/vendor/bootstrap/bootstrap.bundle.min.js',
+  '/vendor/tabler/tabler-icons.min.css',
+  '/vendor/tabler/fonts/tabler-icons.woff2',
+  '/vendor/chartjs/chart.umd.min.js',
   '/vendor/leaflet/leaflet.js',
   '/vendor/leaflet/leaflet.css',
   '/vendor/leaflet/images/layers.png',

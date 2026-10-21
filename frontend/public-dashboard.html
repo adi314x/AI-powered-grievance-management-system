@@ -8,12 +8,17 @@
     <link rel="stylesheet" href="government-portal-theme.css">
     <link rel="stylesheet" href="improved-contrast.css">
     <script src="runtime-config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="vendor/chartjs/chart.umd.min.js"></script>
+
+    <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="vendor/tabler/tabler-icons.min.css">
+    <link rel="stylesheet" href="design-system.css?v=20260418">
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
 </head>
 <body>
     <header class="gov-header" style="padding: 15px 20px;">
         <div class="gov-header-content">
-            <h1 data-translate="public_dashboard_title">🇮🇳 Smart Grievance System - Public Dashboard</h1>
+            <h1 data-translate="public_dashboard_title">Smart Grievance System - Public Dashboard</h1>
             <a href="index.html" class="btn btn-primary" data-translate="file_complaint">File a Complaint</a>
         </div>
     </header>
@@ -83,13 +88,30 @@
                 `).join('') || '<p>No data yet</p>';
 
                 if (entries.length > 0 && typeof Chart !== 'undefined') {
+                    Chart.defaults.color = '#52647d';
+                    Chart.defaults.font.family = 'Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                    Chart.defaults.borderColor = '#d8e0ea';
                     new Chart(document.getElementById('deptChart'), {
                         type: 'bar',
                         data: {
                             labels: entries.map(([d]) => d),
-                            datasets: [{ label: 'Complaints', data: entries.map(([,c]) => c), backgroundColor: '#3B82F6' }]
+                            datasets: [{
+                                label: 'Complaints',
+                                data: entries.map(([,c]) => c),
+                                backgroundColor: '#2b74bd',
+                                borderRadius: 6,
+                                maxBarThickness: 48
+                            }]
                         },
-                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { labels: { usePointStyle: true, boxWidth: 8 } } },
+                            scales: {
+                                x: { grid: { display: false } },
+                                y: { beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
                     });
                 }
             } catch (e) {

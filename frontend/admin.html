@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="government-portal-theme.css">
     <link rel="stylesheet" href="improved-contrast.css">
     <link rel="stylesheet" href="department-backgrounds.css">
+
+    <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="vendor/tabler/tabler-icons.min.css">
+    <link rel="stylesheet" href="design-system.css?v=20260418">
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
 </head>
 <body>
     <header class="header">
@@ -26,8 +31,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2 class="card-title" style="margin: 0;" data-translate="system_analytics">System Analytics</h2>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="downloadExport('grievances')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="export_excel">📥 Export Excel</button>
-                    <button onclick="downloadExport('audit')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="audit_log">📋 Audit Log</button>
+                    <button onclick="downloadExport('grievances')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="export_excel"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> Export Excel</button>
+                    <button onclick="downloadExport('audit')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;" data-translate="audit_log"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Audit Log</button>
                 </div>
             </div>
             <div id="analytics">
