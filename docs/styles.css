@@ -614,3 +614,98 @@ body::after {
         border: 1px solid #ccc;
     }
 }
+
+.grievance-entry {
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.grievance-entry:hover,
+.grievance-entry[open] {
+    border-color: #93c5fd;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.grievance-entry-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.grievance-entry-summary::-webkit-details-marker {
+    display: none;
+}
+
+.grievance-entry-summary::after {
+    content: "Click to view details +";
+    grid-column: 1 / -1;
+    justify-self: end;
+    color: #2563eb;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.grievance-entry[open] > .grievance-entry-summary::after {
+    content: "Hide details −";
+}
+
+.grievance-entry-title,
+.grievance-entry-meta,
+.grievance-entry-preview {
+    min-width: 0;
+}
+
+.grievance-entry-title {
+    color: #1e3a8a;
+    font-weight: 700;
+}
+
+.grievance-entry-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.grievance-entry-preview {
+    grid-column: 1 / -1;
+    color: #475569;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grievance-entry-details {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px;
+    color: #334155;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.grievance-entry-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+@media (max-width: 768px) {
+    .grievance-entry-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .grievance-entry-meta {
+        justify-content: flex-start;
+    }
+}

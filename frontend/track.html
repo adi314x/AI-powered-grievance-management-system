@@ -155,9 +155,7 @@
     <script src="language-config.js"></script>
     <script src="translations.js"></script>
     <script>
-        if (!checkAuth()) {
-            throw new Error('Not authenticated');
-        }
+        const isAuthenticated = checkAuth();
 
         // Smooth scroll to comments section
         function scrollToComments() {
@@ -363,7 +361,11 @@
 
             } catch (error) {
                 showAlert(error.message || 'Failed to load grievance', 'error');
-                setTimeout(() => window.location.href = getHomeUrl(), 2000);
+                const message = escapeHtml(error.message || 'Failed to load grievance');
+                document.getElementById('grievanceDetails').innerHTML =
+                    `<p class="alert alert-error">${message}</p>`;
+                document.getElementById('timeline').innerHTML =
+                    `<p class="alert alert-error">Timeline unavailable: ${message}</p>`;
             }
         }
 
@@ -612,12 +614,24 @@
         }
 
         // Load grievance and comments on page load
-        loadGrievance();
-        loadComments();
+        if (isAuthenticated && grievanceId) {
+            loadGrievance();
+            loadComments();
+        } else {
+            const message = !isAuthenticated
+                ? 'Sign in to view this grievance. Redirecting to login...'
+                : 'No grievance ID was provided.';
+            const notice = `<p class="alert alert-error">${escapeHtml(message)}</p>`;
+            document.getElementById('grievanceDetails').innerHTML = notice;
+            document.getElementById('timeline').innerHTML = notice;
+            document.getElementById('commentsList').innerHTML = notice;
+            document.getElementById('addCommentBtn').disabled = true;
+            document.getElementById('commentText').disabled = true;
+        }
 
         // Auto-translation function for comments
         // Translation dictionary for common phrases
-        const translations = {
+        const commentTranslations = {
             'hi': { 'Received': 'प्राप्त', 'Assigned': 'सौंपा गया', 'In Progress': 'प्रगति में', 'Resolved': 'हल हो गया', 'Closed': 'बंद', 'Rejected': 'अस्वीकृत', 'Your complaint': 'आपकी शिकायत', 'has been': 'है', 'processed': 'संसाधित', 'received': 'प्राप्त', 'assigned': 'सौंपा गया', 'Updated by': 'द्वारा अपडेट', 'SYSTEM': 'सिस्टम', 'department': 'विभाग', 'to': 'को', 'for': 'के लिए', 'investigation': 'जांच', 'Supply': 'आपूर्ति', 'Water': 'जल', 'Electricity': 'बिजली', 'Road': 'सड़क', 'Health': 'स्वास्थ्य', 'Education': 'शिक्षा', 'Transport': 'परिवहन', 'issue': 'समस्या', 'problem': 'समस्या', 'complaint': 'शिकायत', 'officer': 'अधिकारी', 'verified': 'सत्यापित', 'under review': 'समीक्षाधीन', 'action taken': 'कार्रवाई की गई' },
             'ta': { 'Received': 'பெறப்பட்டது', 'Assigned': 'ஒதுக்கப்பட்டது', 'In Progress': 'முன்னேற்றத்தில்', 'Resolved': 'தீர்க்கப்பட்டது', 'Closed': 'மூடப்பட்டது', 'Rejected': 'நிராகரிக்கப்பட்டது', 'Your complaint': 'உங்கள் புகார்', 'has been': 'உள்ளது', 'processed': 'செயல்படுத்தப்பட்டது', 'received': 'பெறப்பட்டது', 'assigned': 'ஒதுக்கப்பட்டது', 'Updated by': 'புதுப்பிக்கப்பட்டது', 'SYSTEM': 'அமைப்பு', 'department': 'துறை', 'to': 'க்கு', 'for': 'க்காக', 'investigation': 'விசாரணை', 'Supply': 'வழங்கல்', 'Water': 'நீர்', 'Electricity': 'மின்சாரம்', 'Road': 'சாலை', 'Health': 'சுகாதாரம்', 'Education': 'கல்வி', 'Transport': 'போக்குவரத்து', 'issue': 'பிரச்சினை', 'problem': 'சிக்கல்', 'complaint': 'புகார்', 'officer': 'அதிகாரி', 'verified': 'சரிபார்க்கப்பட்டது', 'under review': 'ஆய்வில்', 'action taken': 'நடவடிக்கை எடுக்கப்பட்டது' },
             'te': { 'Received': 'స్వీకరించబడింది', 'Assigned': 'కేటాయించబడింది', 'In Progress': 'పురోగతిలో', 'Resolved': 'పరిష్కరించబడింది', 'Closed': 'మూసివేయబడింది', 'Rejected': 'తిరస్కరించబడింది', 'Your complaint': 'మీ ఫిర్యాదు', 'has been': 'ఉంది', 'processed': 'ప్రాసెస్ చేయబడింది', 'received': 'స్వీకరించబడింది', 'assigned': 'కేటాయించబడింది', 'Updated by': 'నవీకరించబడింది', 'SYSTEM': 'వ్యవస్థ', 'department': 'విభాగం', 'to': 'కు', 'for': 'కోసం', 'investigation': 'దర్యాప్తు', 'Supply': 'సరఫరా', 'Water': 'నీరు', 'Electricity': 'విద్యుత్', 'Road': 'రోడ్డు', 'Health': 'ఆరోగ్యం', 'Education': 'విద్య', 'Transport': 'రవాణా', 'issue': 'సమస్య', 'problem': 'సమస్య', 'complaint': 'ఫిర్యాదు', 'officer': 'అధికారి', 'verified': 'ధృవీకరించబడింది', 'under review': 'సమీక్షలో', 'action taken': 'చర్య తీసుకోబడింది' },
@@ -633,12 +647,12 @@
 
         // Simple translation function
         function translateText(text, targetLang) {
-            if (targetLang === 'en' || !translations[targetLang]) {
+            if (targetLang === 'en' || !commentTranslations[targetLang]) {
                 return text;
             }
             
             let translatedText = text;
-            const langDict = translations[targetLang];
+            const langDict = commentTranslations[targetLang];
             
             // Replace known phrases and words (case-insensitive)
             for (const [english, translated] of Object.entries(langDict)) {
@@ -772,10 +786,12 @@
         });
 
         // Auto-refresh every 30 seconds
-        setInterval(() => {
-            loadGrievance();
-            loadComments();
-        }, 30000);
+        if (isAuthenticated && grievanceId) {
+            setInterval(() => {
+                loadGrievance();
+                loadComments();
+            }, 30000);
+        }
     </script>
     <script src="government-portal-init.js"></script>
     <script src="simple-translator.js"></script>

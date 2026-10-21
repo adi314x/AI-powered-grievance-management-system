@@ -112,47 +112,38 @@
                     return;
                 }
 
-                grievancesList.innerHTML = `
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Complaint</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${grievances.map(g => `
-                                    <tr>
-                                        <td>#${g.id}</td>
-                                        <td style="max-width: 300px;">
-                                            <div style="margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                ${escapeHtml(g.complaint_text)}
-                                            </div>
-                                            <button onclick="showTranslationModal('${g.complaint_text.replace(/'/g, "\\'")}', getCurrentLanguage())" 
-                                                    class="translate-btn" 
-                                                    style="padding: 4px 10px; font-size: 12px;">
-                                                <span class="translate-icon">🌐</span>
-                                                <span class="translate-text">Translate</span>
-                                            </button>
-                                        </td>
-                                        <td>${g.location || '-'}</td>
-                                        <td>${renderStatusBadge(g.status)}</td>
-                                        <td>${formatDate(g.created_at)}</td>
-                                        <td>
-                                            <button onclick="openUpdateModal(${g.id})" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Update</button>
-                                            <a href="track.html?id=${g.id}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-left: 0.5rem;">View</a>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                grievancesList.innerHTML = grievances.map(g => {
+                    const complaintText = g.complaint_text || '';
+
+                    return `
+                        <details class="grievance-entry">
+                            <summary class="grievance-entry-summary">
+                                <span class="grievance-entry-title">
+                                    Grievance #${escapeHtml(g.id)} · ${escapeHtml(g.assigned_department || user.department)}
+                                </span>
+                                <span class="grievance-entry-meta">
+                                    ${renderStatusBadge(g.status || 'Received')}
+                                    <small>${escapeHtml(formatDate(g.created_at))}</small>
+                                </span>
+                                <span class="grievance-entry-preview">${escapeHtml(complaintText)}</span>
+                            </summary>
+                            <div class="grievance-entry-details">
+                                <p><strong>Complaint details</strong></p>
+                                <p class="grievance-full-text">${escapeHtml(complaintText)}</p>
+                                <p><strong>Location:</strong> ${escapeHtml(g.location || 'Not provided')}</p>
+                                <div class="grievance-entry-actions">
+                                    <button onclick="showTranslationModal(this.closest('.grievance-entry').querySelector('.grievance-full-text').textContent, getCurrentLanguage())"
+                                            class="translate-btn">
+                                        <span class="translate-icon">🌐</span>
+                                        <span class="translate-text">Translate</span>
+                                    </button>
+                                    <button onclick="openUpdateModal(${Number(g.id)})" class="btn btn-primary">Update grievance</button>
+                                    <a href="track.html?id=${encodeURIComponent(g.id)}" class="btn btn-secondary">Open timeline</a>
+                                </div>
+                            </div>
+                        </details>
+                    `;
+                }).join('');
             } catch (error) {
                 document.getElementById('grievancesList').innerHTML = 
                     `<p class="alert alert-error">${error.message}</p>`;

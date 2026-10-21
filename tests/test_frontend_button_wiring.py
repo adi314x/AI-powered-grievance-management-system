@@ -139,6 +139,22 @@ def test_register_page_sets_pending_otp_state_for_verify_flow():
     assert "verify-email.html?email=" in content
 
 
+def test_all_role_grievance_lists_use_expandable_summaries():
+    sources = {
+        "citizen": (FRONTEND_DIR / "js" / "pages" / "index-dashboard.js").read_text(encoding="utf-8"),
+        "admin": (FRONTEND_DIR / "admin.html").read_text(encoding="utf-8"),
+        "officer": (FRONTEND_DIR / "officer.html").read_text(encoding="utf-8"),
+    }
+
+    for role, source in sources.items():
+        assert '<details class="grievance-entry">' in source, role
+        assert '<summary class="grievance-entry-summary">' in source, role
+        assert 'class="grievance-entry-details"' in source, role
+
+    docs_dashboard = (ROOT_DIR / "docs" / "js" / "pages" / "index-dashboard.js").read_text(encoding="utf-8")
+    assert '<details class="grievance-entry">' in docs_dashboard
+
+
 def test_tracking_page_inline_javascript_parses(tmp_path):
     node = shutil.which("node")
     if not node:
@@ -147,7 +163,11 @@ def test_tracking_page_inline_javascript_parses(tmp_path):
     for page_name in ("frontend/track.html", "docs/track.html"):
         html = (ROOT_DIR / page_name).read_text(encoding="utf-8")
         inline_scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, flags=re.I | re.S)
-        source = "\n".join(script for script in inline_scripts if script.strip())
+        page_directory = ROOT_DIR / Path(page_name).parent
+        shared_translations = (page_directory / "translations.js").read_text(encoding="utf-8")
+        source = shared_translations + "\n" + "\n".join(
+            script for script in inline_scripts if script.strip()
+        )
         script_path = tmp_path / f"{Path(page_name).parent.name}-track-inline.js"
         script_path.write_text(source, encoding="utf-8")
         result = subprocess.run(

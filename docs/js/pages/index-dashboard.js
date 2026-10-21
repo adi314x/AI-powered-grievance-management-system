@@ -163,30 +163,38 @@
                 const commentLabel = grievance.comment_count === 1 ? 'Comment' : 'Comments';
                 const commentKey = grievance.comment_count === 1 ? 'comment' : 'comments_plural';
 
+                const complaintText = grievance.complaint_text || '';
+                const submittedDate = grievance.created_at
+                    ? new Date(grievance.created_at).toLocaleDateString('en-IN')
+                    : 'Date unavailable';
+
                 return `
-                    <article class="grievance-card">
-                        <div class="grievance-header">
-                            <div class="grievance-id">${escapeHtml(grievance.id)}</div>
-                            ${statusBadge}
-                        </div>
-                        <div class="grievance-content">
-                            <strong>${escapeHtml(grievance.assigned_department || 'General')}</strong><br>
-                            ${escapeHtml((grievance.complaint_text || '').substring(0, 150))}
-                            ${(grievance.complaint_text || '').length > 150 ? '...' : ''}
-                        </div>
-                        <div class="grievance-footer">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <span><span data-translate="submitted">Submitted</span>: ${new Date(grievance.created_at).toLocaleDateString('en-IN')}</span>
-                                ${grievance.comment_count > 0 ? `
-                                    <span class="comment-count-pill">
-                                        <span aria-hidden="true">💬</span>
-                                        <span>${grievance.comment_count} <span data-translate="${commentKey}">${commentLabel}</span></span>
-                                    </span>
-                                ` : ''}
+                    <details class="grievance-entry">
+                        <summary class="grievance-entry-summary">
+                            <span class="grievance-entry-title">
+                                Grievance #${escapeHtml(grievance.id)} · ${escapeHtml(grievance.assigned_department || 'General')}
+                            </span>
+                            <span class="grievance-entry-meta">
+                                ${statusBadge}
+                                <small>${escapeHtml(submittedDate)}</small>
+                            </span>
+                            <span class="grievance-entry-preview">${escapeHtml(complaintText)}</span>
+                        </summary>
+                        <div class="grievance-entry-details">
+                            <p><strong>Complaint details</strong></p>
+                            <p>${escapeHtml(complaintText)}</p>
+                            ${grievance.location ? `<p><strong>Location:</strong> ${escapeHtml(grievance.location)}</p>` : ''}
+                            ${grievance.comment_count > 0 ? `
+                                <p class="comment-count-pill">
+                                    <span aria-hidden="true">💬</span>
+                                    <span>${grievance.comment_count} <span data-translate="${commentKey}">${commentLabel}</span></span>
+                                </p>
+                            ` : ''}
+                            <div class="grievance-entry-actions">
+                                <a href="track.html?id=${encodeURIComponent(grievance.id)}" class="btn btn-primary btn-small" data-translate="track_status">Track Status</a>
                             </div>
-                            <a href="track.html?id=${grievance.id}" class="btn btn-primary btn-small" data-translate="track_status">Track Status</a>
                         </div>
-                    </article>
+                    </details>
                 `;
             }).join('');
 

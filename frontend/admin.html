@@ -346,60 +346,48 @@
                     return;
                 }
 
-                grievancesList.innerHTML = `
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Complainant</th>
-                                    <th>Complaint</th>
-                                    <th>Department</th>
-                                    <th>Assigned Officer</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.grievances.map(g => `
-                                    <tr style="cursor: pointer; transition: background 0.2s;" 
-                                        onmouseover="this.style.background='#F9FAFB'" 
-                                        onmouseout="this.style.background='white'">
-                                        <td><strong>#${g.id}</strong></td>
-                                        <td>
-                                            ${g.complainant ? `
-                                                <strong>${g.complainant.name}</strong><br>
-                                                <small style="color: #6B7280;">📧 ${g.complainant.email}</small><br>
-                                                <small style="color: #6B7280;">📞 ${g.complainant.phone}</small>
-                                            ` : '<span style="color: #9CA3AF;">Unknown</span>'}
-                                        </td>
-                                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            ${escapeHtml(g.complaint_text)}
-                                        </td>
-                                        <td><span class="badge badge-progress">${g.assigned_department}</span></td>
-                                        <td>
-                                            ${g.assigned_officer ? `
-                                                <strong>${g.assigned_officer.name}</strong><br>
-                                                <small style="color: #6B7280;">${g.assigned_officer.designation || 'Officer'}</small>
-                                            ` : '<span style="color: #9CA3AF;">Not Assigned</span>'}
-                                        </td>
-                                        <td>${renderStatusBadge(g.status)}</td>
-                                        <td><small>${formatDate(g.created_at)}</small></td>
-                                        <td>
-                                            <button onclick="showGrievanceDetails(${g.id})" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem; margin-right: 0.5rem;">
-                                                📋 Details
-                                            </button>
-                                            <a href="track.html?id=${g.id}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem; text-decoration: none;">
-                                                👁️ Track
-                                            </a>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                grievancesList.innerHTML = data.grievances.map(g => {
+                    const complaintText = g.complaint_text || '';
+                    const complainant = g.complainant || {};
+                    const officer = g.assigned_officer || {};
+                    const department = g.assigned_department || 'General';
+
+                    return `
+                        <details class="grievance-entry">
+                            <summary class="grievance-entry-summary">
+                                <span class="grievance-entry-title">
+                                    Grievance #${escapeHtml(g.id)} · ${escapeHtml(complainant.name || 'Unknown complainant')}
+                                </span>
+                                <span class="grievance-entry-meta">
+                                    ${renderStatusBadge(g.status || 'Received')}
+                                    <span class="badge badge-progress">${escapeHtml(department)}</span>
+                                    <small>${escapeHtml(formatDate(g.created_at))}</small>
+                                </span>
+                                <span class="grievance-entry-preview">${escapeHtml(complaintText)}</span>
+                            </summary>
+                            <div class="grievance-entry-details">
+                                <p><strong>Complaint details</strong></p>
+                                <p>${escapeHtml(complaintText)}</p>
+                                <p><strong>Location:</strong> ${escapeHtml(g.location || 'Not provided')}</p>
+                                <p><strong>Complainant:</strong> ${escapeHtml(complainant.name || 'Unknown')}
+                                    ${complainant.email ? ` · ${escapeHtml(complainant.email)}` : ''}
+                                    ${complainant.phone ? ` · ${escapeHtml(complainant.phone)}` : ''}
+                                </p>
+                                <p><strong>Assigned officer:</strong> ${escapeHtml(officer.name || 'Not assigned')}
+                                    ${officer.designation ? ` · ${escapeHtml(officer.designation)}` : ''}
+                                </p>
+                                <div class="grievance-entry-actions">
+                                    <button onclick="showGrievanceDetails(${Number(g.id)})" class="btn btn-secondary">
+                                        📋 More details
+                                    </button>
+                                    <a href="track.html?id=${encodeURIComponent(g.id)}" class="btn btn-primary">
+                                        👁️ Open timeline
+                                    </a>
+                                </div>
+                            </div>
+                        </details>
+                    `;
+                }).join('');
                 
                 // Store grievances data for detail view
                 window.grievancesData = data.grievances;
