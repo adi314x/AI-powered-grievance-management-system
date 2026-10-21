@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from backend.models import User, Grievance, GrievanceUpdate, Notification
+from backend.models import User, Grievance, GrievanceUpdate, Notification, FraudReport
 from backend.models_addons import DepartmentCorrectionLog
 from backend.extensions import db
 from backend.config import Config
 from backend.routes.auth import get_current_user_from_token
 from backend.services.email_service import EmailService
 from backend.services.notification_service import NotificationService
+from backend.services.fraud_service import review_fraud_report as apply_fraud_review
 from backend.services.model_retrain import retrain_model, get_retrain_status
 from backend.security import SecurityFirewall
 from backend.utils.validation import ValidationError, normalize_phone, validate_name
@@ -724,46 +725,23 @@ def review_fraud_report(report_id):
         action = data.get('action')
         admin_notes = data.get('admin_notes', '')
 
-        if action not in ['verify', 'dismiss']:
-            return jsonify({'error': 'Invalid action. Must be verify or dismiss'}), 400
+        if action not in ['verify', 'dismiss', 'suspend']:
+            return jsonify({'error': 'Invalid action. Must be verify, dismiss, or suspend'}), 400
 
         report = FraudReport.query.get(report_id)
         if not report:
             return jsonify({'error': 'Fraud report not found'}), 404
 
-        grievance = Grievance.query.get(report.grievance_id)
-        if not grievance:
+        if not report.grievance:
             return jsonify({'error': 'Associated grievance not found'}), 404
 
-        report.status = 'Verified' if action == 'verify' else 'Dismissed'
-        report.admin_notes = admin_notes
-        report.reviewed_at = datetime.utcnow()
-
-        if action == 'verify':
-            grievance.status = 'Closed'
-            message = f"Fraud verified by Admin. Grievance closed. Notes: {admin_notes}"
-            
-            # Optionally suspend user
-            if data.get('suspend_user'):
-                target_user = User.query.get(grievance.user_id)
-                if target_user:
-                    target_user.account_suspended = True
-                    target_user.suspension_reason = f"Verified Fraud on Grievance #{grievance.id}: {admin_notes}"
-        else:
-            # Dismissed - restore to Assigned or previous
-            grievance.status = 'Assigned to Department'
-            message = f"Fraud report dismissed by Admin. Resuming investigations. Notes: {admin_notes}"
-
-        # Create update entry
-        update = GrievanceUpdate(
-            grievance_id=grievance.id,
-            status=grievance.status,
-            message=message,
-            updated_by_role='ADMIN',
-            updated_by_name=admin_user.name
+        grievance = apply_fraud_review(
+            report,
+            admin_user,
+            action,
+            admin_notes=admin_notes,
+            suspend_user=bool(data.get('suspend_user')),
         )
-        db.session.add(update)
-        db.session.commit()
 
         return jsonify({
             'message': f'Fraud report {action}ed successfully',

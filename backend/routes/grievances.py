@@ -1,15 +1,17 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 import json
-from backend.models import Grievance, GrievanceUpdate, GrievanceComment, User, RoleHierarchy
+from backend.models import Grievance, GrievanceUpdate, GrievanceComment, FraudReport, User, RoleHierarchy
 from backend.models_addons import AuditLog, GrievanceRating, DepartmentCorrectionLog
 from backend.extensions import db
 from backend.config import Config
 from backend.routes.auth import get_current_user_from_token
 from backend.services.classifier import classifier
+from backend.services.content_moderator import ContentModerator
 from backend.services.email_service import EmailService
 from backend.services.notification_service import NotificationService
 from backend.services.comment_escalation import check_and_escalate_comments, escalate_comment_manually
+from backend.services.fraud_service import notify_fraud_report, review_fraud_report
 from backend.services.audit_service import log_audit
 from backend.security import require_firewall, SecurityFirewall, SecurityLogger
 from backend.utils.roles import ADMIN_ROLE_VALUES, OFFICER_ROLE_VALUES, canonical_role, is_role
@@ -100,6 +102,13 @@ def submit_grievance():
         except ValidationError as validation_error:
             return jsonify({'error': str(validation_error)}), 400
 
+        moderation = ContentModerator.moderate_content(complaint_text)
+        if ContentModerator.should_block_submission(moderation):
+            return jsonify({
+                'error': ContentModerator.get_user_warning_message(moderation),
+                'moderation': moderation,
+            }), 400
+
         # Predict department using ML with confidence.
         prediction = classifier.predict_with_confidence(complaint_text)
         predicted_department = prediction['department']
@@ -169,6 +178,9 @@ def submit_grievance():
             images=images_json,
             complainant_dob=complainant_dob,
             complainant_gender=complainant_gender,
+            moderation_score=moderation.get('score', 0),
+            moderation_severity=moderation.get('severity'),
+            moderation_flags=json.dumps(moderation.get('flags', [])),
             # SLA tracking
             sla_hours=sla_hours,
             sla_deadline=sla_deadline,
@@ -212,6 +224,17 @@ def submit_grievance():
                         f'Citizen: {user.name}'
                     ),
                     notification_type='triage_review',
+                    related_grievance_id=grievance.id,
+                    is_read=False,
+                )
+        elif ContentModerator.should_notify_admin(moderation):
+            admins = User.query.filter(User.role.in_(ADMIN_ROLE_VALUES)).all()
+            for admin in admins:
+                NotificationService.queue_notification(
+                    user_id=admin.id,
+                    title=f'Content Review Needed - Grievance #{grievance.id}',
+                    message=ContentModerator.get_user_warning_message(moderation),
+                    notification_type='content_moderation',
                     related_grievance_id=grievance.id,
                     is_read=False,
                 )
@@ -667,4 +690,124 @@ def manually_escalate_comment(comment_id):
             return jsonify(result), 400
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@grievances_bp.route('/<int:grievance_id>/report-fraud', methods=['POST'])
+def report_fraud(grievance_id):
+    """Submit an officer fraud report for admin review."""
+    try:
+        officer, auth_response = get_current_user_from_token(
+            return_error=True,
+            required_roles=['OFFICER'],
+        )
+        if auth_response:
+            return auth_response
+
+        grievance = Grievance.query.get(grievance_id)
+        if not grievance:
+            return jsonify({'error': 'Grievance not found'}), 404
+
+        allowed, error = can_officer_act_on_grievance(officer, grievance)
+        if not allowed:
+            return jsonify({'error': error}), 403
+
+        data = request.get_json() or {}
+        fraud_type = data.get('fraud_type')
+        description = data.get('description')
+        if not isinstance(fraud_type, str) or not fraud_type.strip():
+            return jsonify({'error': 'fraud_type is required'}), 400
+        if not isinstance(description, str) or not description.strip():
+            return jsonify({'error': 'description is required'}), 400
+
+        report = FraudReport(
+            grievance=grievance,
+            grievance_id=grievance.id,
+            reported_by_officer_id=officer.id,
+            complainant_user_id=grievance.user_id,
+            fraud_type=fraud_type.strip()[:50],
+            description=description.strip(),
+            evidence=(
+                json.dumps(data['evidence'])
+                if isinstance(data.get('evidence'), (dict, list))
+                else data.get('evidence')
+            ),
+            site_visit_notes=(
+                data.get('site_visit_notes').strip()
+                if isinstance(data.get('site_visit_notes'), str)
+                else None
+            ),
+        )
+        grievance.status = 'Suspended - Fraud Investigation'
+        db.session.add(report)
+        db.session.add(GrievanceUpdate(
+            grievance_id=grievance.id,
+            status=grievance.status,
+            message=f"Fraud report submitted by Officer {officer.name}.",
+            updated_by_role='OFFICER',
+            updated_by_name=officer.name,
+        ))
+        notify_fraud_report(report, officer)
+
+        return jsonify({
+            'message': 'Fraud report submitted for admin review',
+            'fraud_report_id': report.id,
+            'fraud_report': report.to_dict(),
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@grievances_bp.route('/fraud-reports', methods=['GET'])
+def get_fraud_reports():
+    """List fraud reports for admin review."""
+    try:
+        user, auth_response = get_current_user_from_token(
+            return_error=True,
+            required_roles=['ADMIN'],
+        )
+        if auth_response:
+            return auth_response
+
+        reports = FraudReport.query.order_by(FraudReport.created_at.desc()).all()
+        return jsonify({'fraud_reports': [report.to_dict() for report in reports]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@grievances_bp.route('/fraud-reports/<int:report_id>/action', methods=['POST'])
+def action_fraud_report(report_id):
+    """Apply an admin decision to a fraud report."""
+    try:
+        admin_user, auth_response = get_current_user_from_token(
+            return_error=True,
+            required_roles=['ADMIN'],
+        )
+        if auth_response:
+            return auth_response
+
+        data = request.get_json() or {}
+        action = data.get('action')
+        if action not in ('verify', 'dismiss', 'suspend'):
+            return jsonify({'error': 'Invalid action. Must be verify, dismiss, or suspend'}), 400
+
+        report = FraudReport.query.get(report_id)
+        if not report:
+            return jsonify({'error': 'Fraud report not found'}), 404
+
+        grievance = review_fraud_report(
+            report,
+            admin_user,
+            action,
+            admin_notes=data.get('admin_notes', ''),
+            suspend_user=bool(data.get('suspend_user')),
+        )
+        return jsonify({
+            'message': f'Fraud report {action}ed successfully',
+            'report_status': report.status,
+            'grievance_status': grievance.status,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

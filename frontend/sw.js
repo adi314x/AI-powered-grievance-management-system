@@ -1,6 +1,21 @@
 /* Service Worker - PWA Offline Support */
-const CACHE_NAME = 'grievance-v1';
-const STATIC_CACHE = ['/', '/index.html', '/login.html', '/styles.css', '/app.js', '/government-portal-theme.css', '/improved-contrast.css'];
+const CACHE_NAME = 'grievance-v2';
+const STATIC_CACHE = [
+  '/',
+  '/index.html',
+  '/login.html',
+  '/styles.css',
+  '/app.js',
+  '/government-portal-theme.css',
+  '/improved-contrast.css',
+  '/vendor/leaflet/leaflet.js',
+  '/vendor/leaflet/leaflet.css',
+  '/vendor/leaflet/images/layers.png',
+  '/vendor/leaflet/images/layers-2x.png',
+  '/vendor/leaflet/images/marker-icon.png',
+  '/vendor/leaflet/images/marker-icon-2x.png',
+  '/vendor/leaflet/images/marker-shadow.png',
+];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

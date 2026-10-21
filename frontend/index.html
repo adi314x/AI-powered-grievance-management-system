@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="improved-contrast.css">
     <link rel="stylesheet" href="css/index-page.css">
     <link rel="stylesheet" href="css/chatbot.css">
-    <!-- Leaflet.js map -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" crossorigin="">
+    <!-- Leaflet map assets are served locally so the picker does not depend on a CDN. -->
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 
 </head>
 <body>
@@ -226,7 +226,7 @@
     </div>
     <!-- ===== /Floating AI Chatbot Widget ===== -->
 
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin=""></script>
+    <script src="vendor/leaflet/leaflet.js"></script>
     <script src="runtime-config.js"></script>
     <script src="app.js"></script>
     <script src="language-config.js"></script>

@@ -183,7 +183,8 @@ def train_classifier():
         model = LogisticRegression(
             max_iter=2000,
             random_state=42,
-            solver='lbfgs'
+            solver='lbfgs',
+            C=10
         )
     
     model.fit(X_train_vectorized, y_train)

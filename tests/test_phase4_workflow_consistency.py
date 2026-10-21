@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from backend.extensions import db
 from backend.models import (
     EscalationLog,
+    FraudReport,
     Grievance,
     GrievanceComment,
     GrievanceUpdate,
@@ -293,3 +294,80 @@ def test_manual_escalation_falls_back_to_admin_when_no_department_officer(app):
         assert manual_log is not None
         assert manual_log.to_officer_id == admin.id
 
+
+def test_tracking_endpoint_returns_timeline_for_all_roles(client, app):
+    with app.app_context():
+        citizen = create_user("Tracking Citizen", "track-citizen@example.com", "9876511101")
+        officer = create_user(
+            "Tracking Officer",
+            "track-officer@example.com",
+            "9876511102",
+            role="OFFICER",
+            department="Water Supply",
+        )
+        admin = create_user("Tracking Admin", "track-admin@example.com", "9876511103", role="ADMIN")
+        grievance = create_grievance(citizen.id, "Water Supply", status="Received")
+        update = GrievanceUpdate(
+            grievance_id=grievance.id,
+            status="Received",
+            message="Complaint received.",
+            updated_by_role="SYSTEM",
+            updated_by_name="Smart Grievance System",
+        )
+        db.session.add(update)
+        db.session.commit()
+        grievance_id = grievance.id
+        role_ids = (citizen.id, officer.id, admin.id)
+
+    for user_id in role_ids:
+        response = client.get(
+            f"/api/grievances/{grievance_id}",
+            headers=auth_headers(user_id),
+        )
+        assert response.status_code == 200, response.get_json()
+        payload = response.get_json()["grievance"]
+        assert payload["id"] == grievance_id
+        assert payload["updates"][0]["message"] == "Complaint received."
+
+
+def test_admin_analytics_and_fraud_review_endpoints(client, app):
+    with app.app_context():
+        admin = create_user("Fraud Review Admin", "review-admin@example.com", "9876511104", role="ADMIN")
+        citizen = create_user("Fraud Review Citizen", "review-citizen@example.com", "9876511105")
+        officer = create_user(
+            "Fraud Review Officer",
+            "review-officer@example.com",
+            "9876511106",
+            role="OFFICER",
+            department="Water Supply",
+        )
+        grievance = create_grievance(
+            citizen.id,
+            "Water Supply",
+            status="Suspended - Fraud Investigation",
+        )
+        report = FraudReport(
+            grievance_id=grievance.id,
+            reported_by_officer_id=officer.id,
+            complainant_user_id=citizen.id,
+            fraud_type="false_complaint",
+            description="Evidence requires review.",
+            status="Pending",
+        )
+        db.session.add(report)
+        db.session.commit()
+        admin_id = admin.id
+        report_id = report.id
+
+    headers = auth_headers(admin_id)
+    analytics = client.get("/api/admin/analytics", headers=headers)
+    assert analytics.status_code == 200, analytics.get_json()
+    assert analytics.get_json()["fraud"]["pending_reports"] == 1
+
+    response = client.post(
+        f"/api/admin/fraud-reports/{report_id}/review",
+        json={"action": "dismiss", "admin_notes": "The report was not substantiated."},
+        headers=headers,
+    )
+    assert response.status_code == 200, response.get_json()
+    assert response.get_json()["report_status"] == "Dismissed"

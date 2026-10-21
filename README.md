@@ -172,6 +172,10 @@ Resolution → Citizen Notification
    ```bash
    git clone https://github.com/Santhakumarramesh/smart-grievance-system.git
    cd smart-grievance-system
+   python -m venv .venv
+   ```
+   Activate the environment (`.venv\Scripts\Activate.ps1` in Windows PowerShell, or `source .venv/bin/activate` on macOS/Linux), then install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 2. **Bootstrap Database**:
@@ -184,6 +188,14 @@ Resolution → Citizen Notification
    python run.py
    ```
    *Access at: [http://localhost:8000](http://localhost:8000)*
+
+### Run Tests
+
+With the virtual environment activated, run the test suite from the project root:
+
+```bash
+python -m pytest -q
+```
 
 > [!WARNING]
 > **Demo Credentials**: `admin123` / `officer123` / `citizen123` are for local development only. Do not use in production.

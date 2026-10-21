@@ -1,8 +1,8 @@
 {
-  "trained_at_utc": "2026-09-30T11:46:18.491339",
+  "trained_at_utc": "2026-10-21T15:55:20.536279",
   "dataset": {
     "path": "data\\indian_grievance_dataset.csv",
-    "version_sha256": "85d42eb2a6d80d887df8a7a4ddadcdab5f398abe3964666badab1009daf1f635",
+    "version_sha256": "16e2293b3c180ea72a167a6e806c0e6dfe4a4446cb9b8fc161233310ef067e80",
     "samples": 300,
     "train_samples": 240,
     "test_samples": 60,
@@ -20,11 +20,11 @@
     "vocabulary_size": 2500
   },
   "metrics": {
-    "accuracy": 0.7833333333333333,
-    "macro_avg_precision": 0.8073593073593074,
-    "macro_avg_recall": 0.7833333333333334,
-    "macro_avg_f1": 0.7884730406469537,
-    "weighted_avg_f1": 0.7884730406469537,
+    "accuracy": 0.8666666666666667,
+    "macro_avg_precision": 0.8805128205128205,
+    "macro_avg_recall": 0.8666666666666666,
+    "macro_avg_f1": 0.8660278980278979,
+    "weighted_avg_f1": 0.866027898027898,
     "confusion_matrix": {
       "labels": [
         "Education",
@@ -43,30 +43,30 @@
         ],
         [
           0,
-          10,
-          1,
-          0,
-          1
-        ],
-        [
+          12,
           0,
           0,
-          9,
-          3,
           0
         ],
         [
           0,
           0,
-          2,
-          10,
+          11,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          11,
           0
         ],
         [
           0,
           1,
-          2,
-          0,
+          1,
+          1,
           9
         ]
       ]

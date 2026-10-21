@@ -370,31 +370,74 @@
         if (_leafletLoading) return; // already in flight
         _leafletLoading = true;
 
-        // Inject CSS if not present
+        const sources = [
+            {
+                js: 'vendor/leaflet/leaflet.js',
+                css: 'vendor/leaflet/leaflet.css',
+            },
+            {
+                js: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
+                css: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css',
+            },
+            {
+                js: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js',
+                css: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css',
+            },
+        ];
+
+        const finishLoading = () => {
+            _leafletLoading = false;
+            const callbacks = _leafletCallbacks;
+            _leafletCallbacks = [];
+            callbacks.forEach(cb => cb());
+        };
+
+        const loadFromSource = (sourceIndex) => {
+            if (sourceIndex >= sources.length) {
+                _leafletLoading = false;
+                _leafletCallbacks = [];
+                notify('Failed to load the map library from local assets or backup CDNs. Please check your connection and try again.', 'error');
+                const btn = document.getElementById('mapToggleBtn');
+                if (btn) { btn.textContent = '📍 Pick on Map'; btn.disabled = false; }
+                return;
+            }
+
+            const source = sources[sourceIndex];
+            if (sourceIndex > 0 && !document.querySelector(`link[href="${source.css}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = source.css;
+                document.head.appendChild(link);
+            }
+
+            const script = document.createElement('script');
+            script.src = source.js;
+            script.crossOrigin = '';
+            script.onload = () => {
+                if (typeof window.L === 'undefined') {
+                    script.remove();
+                    loadFromSource(sourceIndex + 1);
+                    return;
+                }
+                finishLoading();
+            };
+            script.onerror = () => {
+                script.remove();
+                loadFromSource(sourceIndex + 1);
+            };
+            document.body.appendChild(script);
+        };
+
+        // The primary stylesheet is linked in the page markup. Add a stylesheet
+        // only when falling back to a CDN after the local script fails.
         if (!document.querySelector('link[href*="leaflet"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css';
+            link.href = sources[0].css;
             document.head.appendChild(link);
         }
 
-        // Inject JS
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js';
-        script.crossOrigin = '';
-        script.onload = () => {
-            _leafletLoading = false;
-            _leafletCallbacks.forEach(cb => cb());
-            _leafletCallbacks = [];
-        };
-        script.onerror = () => {
-            _leafletLoading = false;
-            _leafletCallbacks = [];
-            notify('Failed to load map. Please check your internet connection.', 'error');
-            const btn = document.getElementById('mapToggleBtn');
-            if (btn) { btn.textContent = '📍 Pick on Map'; btn.disabled = false; }
-        };
-        document.body.appendChild(script);
+        loadFromSource(0);
     }
 
 

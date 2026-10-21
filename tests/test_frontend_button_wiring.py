@@ -1,5 +1,9 @@
 import re
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -133,3 +137,23 @@ def test_register_page_sets_pending_otp_state_for_verify_flow():
     content = (FRONTEND_DIR / "register.html").read_text(encoding="utf-8", errors="ignore")
     assert "pendingVerificationOtpState" in content
     assert "verify-email.html?email=" in content
+
+
+def test_tracking_page_inline_javascript_parses(tmp_path):
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node.js is required to syntax-check the tracking page")
+
+    for page_name in ("frontend/track.html", "docs/track.html"):
+        html = (ROOT_DIR / page_name).read_text(encoding="utf-8")
+        inline_scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, flags=re.I | re.S)
+        source = "\n".join(script for script in inline_scripts if script.strip())
+        script_path = tmp_path / f"{Path(page_name).parent.name}-track-inline.js"
+        script_path.write_text(source, encoding="utf-8")
+        result = subprocess.run(
+            [node, "--check", str(script_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, f"{page_name}: {result.stderr}"

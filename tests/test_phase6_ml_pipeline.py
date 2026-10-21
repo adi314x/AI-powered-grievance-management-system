@@ -1,4 +1,5 @@
 import pytest
+from sklearn.feature_extraction.text import TfidfVectorizer
 from backend.config import Config
 from backend.extensions import db
 from backend.models import Grievance, GrievanceUpdate, Notification, User
@@ -6,6 +7,7 @@ from backend.models_addons import DepartmentCorrectionLog
 from backend.routes.auth import create_access_token
 from backend.services import model_retrain
 from backend.services.classifier import classifier
+from backend.utils.text_clean import get_stop_words
 
 def auth_headers(user_id):
     return {"Authorization": f"Bearer {create_access_token(user_id)}"}
@@ -137,3 +139,14 @@ def test_manual_triage_assignment_logs_department_correction(client, app):
         assert correction.predicted_department == "Water Supply"
         assert correction.corrected_department == "Electricity"
 
+
+def test_grievance_routing_terms_are_not_removed_as_stop_words():
+    routing_terms = {"road", "street", "area", "complaint", "issue", "problem"}
+    vectorizer = TfidfVectorizer(
+        stop_words=get_stop_words(),
+        ngram_range=(1, 2),
+    )
+
+    vectorizer.fit(["road street area complaint issue problem"])
+
+    assert routing_terms <= vectorizer.vocabulary_.keys()

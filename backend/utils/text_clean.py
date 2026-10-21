@@ -18,9 +18,6 @@ INDIAN_STOP_WORDS = {
     'undi', 'ledu', 'unnayi', 'leni', 'cheyandi', 'cheyam',
     'emi', 'ela', 'evaru', 'eppudu', 'idi', 'adi',
     'sir', 'madam', 'please', 'kindly', 'regarding', 'respectfully',
-    'complaint', 'complaining', 'complained', 'grievance', 'issue', 'problem',
-    'area', 'locality', 'place', 'street', 'road', 'colony',
-    'since', 'days', 'months', 'years', 'today', 'yesterday',
 }
 
 def get_stop_words():

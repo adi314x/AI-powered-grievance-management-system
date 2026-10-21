@@ -1,8 +1,31 @@
 import importlib
-import os
 import sys
+import pytest
 from sqlalchemy import inspect
-from backend.extensions import db
+
+
+@pytest.fixture(autouse=True)
+def preserve_backend_modules():
+    module_names = (
+        "backend",
+        "backend.app",
+        "backend.config",
+        "backend.database",
+        "backend.extensions",
+        "backend.models",
+        "backend.models_addons",
+    )
+    snapshots = {
+        name: dict(sys.modules[name].__dict__)
+        for name in module_names
+        if name in sys.modules
+    }
+    yield
+    for name, namespace in snapshots.items():
+        module = sys.modules[name]
+        module.__dict__.clear()
+        module.__dict__.update(namespace)
+
 
 def _reload_config():
     import backend.config as config_module
