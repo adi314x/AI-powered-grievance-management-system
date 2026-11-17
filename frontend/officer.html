@@ -119,6 +119,14 @@
 
                 grievancesList.innerHTML = grievances.map(g => {
                     const complaintText = g.complaint_text || '';
+                    const assignedToOtherOfficer = !!(
+                        g.assigned_officer_id
+                        && Number(g.assigned_officer_id) !== Number(user.id)
+                    );
+                    const ownershipLabel = g.assigned_officer_name
+                        ? `Assigned to: ${g.assigned_officer_name}`
+                        : 'Unassigned';
+                    const evidenceAi = g.ai_detection_details || null;
 
                     return `
                         <details class="grievance-entry">
@@ -128,6 +136,7 @@
                                 </span>
                                 <span class="grievance-entry-meta">
                                     ${renderStatusBadge(g.status || 'Received')}
+                                    ${g.ai_image_detected ? '<span class="badge investigation">🤖 AI-image flagged</span>' : ''}
                                     <small>${escapeHtml(formatDate(g.created_at))}</small>
                                 </span>
                                 <span class="grievance-entry-preview">${escapeHtml(complaintText)}</span>
@@ -136,13 +145,26 @@
                                 <p><strong>Complaint details</strong></p>
                                 <p class="grievance-full-text">${escapeHtml(complaintText)}</p>
                                 <p><strong>Location:</strong> ${escapeHtml(g.location || 'Not provided')}</p>
+                                <p><strong>Ownership:</strong> ${escapeHtml(ownershipLabel)}</p>
+                                ${evidenceAi ? `
+                                    <p>
+                                        <strong>AI evidence check:</strong>
+                                        ${escapeHtml(evidenceAi.issue_display || evidenceAi.issue_type || 'N/A')}
+                                        (${Number(evidenceAi.issue_confidence_pct || 0).toFixed(1)}%)
+                                        ${evidenceAi.ai_generated
+                                            ? '<span class="badge investigation">⚠️ Possible AI-generated image</span>'
+                                            : '<span class="badge resolved">✅ No AI-image flag</span>'}
+                                    </p>
+                                ` : ''}
                                 <div class="grievance-entry-actions">
                                     <button onclick="showTranslationModal(this.closest('.grievance-entry').querySelector('.grievance-full-text').textContent, getCurrentLanguage())"
                                             class="translate-btn">
                                         <span class="translate-icon">🌐</span>
                                         <span class="translate-text">Translate</span>
                                     </button>
-                                    <button onclick="openUpdateModal(${Number(g.id)})" class="btn btn-primary">Update grievance</button>
+                                    ${assignedToOtherOfficer
+                                        ? '<span class="badge badge-investigation">Assigned to another officer - view only</span>'
+                                        : '<button onclick="openUpdateModal(' + Number(g.id) + ')" class="btn btn-primary">Update grievance</button>'}
                                     <a href="track.html?id=${encodeURIComponent(g.id)}" class="btn btn-secondary">Open timeline</a>
                                 </div>
                             </div>

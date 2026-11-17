@@ -12,6 +12,7 @@ from backend.services.email_service import EmailService
 from backend.services.notification_service import NotificationService
 from backend.services.comment_escalation import check_and_escalate_comments, escalate_comment_manually
 from backend.services.fraud_service import notify_fraud_report, review_fraud_report
+from backend.services.image_ai_service import image_ai_service
 from backend.services.audit_service import log_audit
 from backend.security import require_firewall, SecurityFirewall, SecurityLogger
 from backend.utils.roles import ADMIN_ROLE_VALUES, OFFICER_ROLE_VALUES, canonical_role, is_role
@@ -126,8 +127,23 @@ def submit_grievance():
                 or (prediction_confidence < Config.ML_AUTO_ASSIGN_CONFIDENCE_THRESHOLD)
             )
         
-        if images and len(images) > 5:
+        if images is None:
+            images = []
+        if not isinstance(images, list):
+            return jsonify({'error': 'images must be a list'}), 400
+        if len(images) > 5:
             return jsonify({'error': 'Maximum 5 images allowed'}), 400
+
+        # Vision analysis is supporting evidence only. Text routing remains
+        # authoritative, and a high AI-image score never auto-rejects a case.
+        image_analysis = image_ai_service.analyze_images(images)
+        image_analysis_json = None
+        if image_analysis.get('available'):
+            image_analysis['text_department'] = predicted_department
+            image_analysis['department_match'] = (
+                image_analysis.get('issue_department') == predicted_department
+            )
+            image_analysis_json = json.dumps(image_analysis)
 
         # Get complainant info from user profile
         complainant_dob = user.date_of_birth
@@ -178,9 +194,18 @@ def submit_grievance():
             images=images_json,
             complainant_dob=complainant_dob,
             complainant_gender=complainant_gender,
+            is_flagged=(
+                ContentModerator.should_notify_admin(moderation)
+                or bool(image_analysis.get('ai_generated'))
+            ),
             moderation_score=moderation.get('score', 0),
             moderation_severity=moderation.get('severity'),
             moderation_flags=json.dumps(moderation.get('flags', [])),
+            ai_image_detected=bool(image_analysis.get('ai_generated')),
+            ai_detection_confidence=float(
+                image_analysis.get('ai_confidence_pct', 0.0) or 0.0
+            ),
+            ai_detection_details=image_analysis_json,
             # SLA tracking
             sla_hours=sla_hours,
             sla_deadline=sla_deadline,
@@ -227,7 +252,7 @@ def submit_grievance():
                     related_grievance_id=grievance.id,
                     is_read=False,
                 )
-        elif ContentModerator.should_notify_admin(moderation):
+        if ContentModerator.should_notify_admin(moderation):
             admins = User.query.filter(User.role.in_(ADMIN_ROLE_VALUES)).all()
             for admin in admins:
                 NotificationService.queue_notification(
@@ -239,7 +264,21 @@ def submit_grievance():
                     is_read=False,
                 )
 
-
+        if image_analysis.get('available') and image_analysis.get('ai_generated'):
+            admins = User.query.filter(User.role.in_(ADMIN_ROLE_VALUES)).all()
+            for admin in admins:
+                NotificationService.queue_notification(
+                    user_id=admin.id,
+                    title=f'Possible AI-Generated Evidence - Grievance #{grievance.id}',
+                    message=(
+                        f'Authenticity flag: {image_analysis.get("ai_confidence_pct", 0):.1f}% | '
+                        f'Detected issue: {image_analysis.get("issue_display", "N/A")} | '
+                        f'Citizen: {user.name}'
+                    ),
+                    notification_type='ai_image_review',
+                    related_grievance_id=grievance.id,
+                    is_read=False,
+                )
         
         db.session.commit()
         
@@ -262,6 +301,9 @@ def submit_grievance():
                 'prediction_confidence': prediction_confidence,
                 'routing_status': routing_status,
                 'requires_manual_triage': requires_manual_triage,
+                'image_issue_type': image_analysis.get('issue_type'),
+                'image_ai_generated': image_analysis.get('ai_generated'),
+                'image_ai_confidence_pct': image_analysis.get('ai_confidence_pct'),
             })
         )
         
@@ -274,6 +316,7 @@ def submit_grievance():
             'prediction_confidence': prediction_confidence,
             'auto_assign_threshold': Config.ML_AUTO_ASSIGN_CONFIDENCE_THRESHOLD,
             'sla_deadline': sla_deadline.isoformat(),
+            'image_analysis': image_analysis if image_analysis.get('available') else None,
         }
         return jsonify(response_data), 201
         
@@ -344,9 +387,17 @@ def get_department_grievances(department):
         grievances = Grievance.query.filter_by(
             assigned_department=department
         ).order_by(Grievance.created_at.desc()).all()
-        
+
+        grievances_data = []
+        for grievance in grievances:
+            item = grievance.to_dict()
+            item['assigned_officer_name'] = (
+                grievance.assigned_officer.name if grievance.assigned_officer else None
+            )
+            grievances_data.append(item)
+
         return jsonify({
-            'grievances': [g.to_dict() for g in grievances]
+            'grievances': grievances_data
         }), 200
         
     except Exception as e:
@@ -455,11 +506,20 @@ def update_grievance(grievance_id):
                     'error': f'Invalid department: {new_dept}. Allowed departments: {", ".join(Config.ALLOWED_DEPARTMENTS)}'
                 }), 400
             grievance.assigned_department = new_dept
-        
+
+        citizen = User.query.get(grievance.user_id)
+        if citizen:
+            NotificationService.queue_notification(
+                user_id=citizen.id,
+                title=f'Grievance #{grievance.id} status updated',
+                message=f'Status changed from {old_status} to {new_status}: {message}',
+                notification_type='status_update',
+                related_grievance_id=grievance.id,
+            )
+
         db.session.commit()
         
         # Send email notification to citizen with detailed update
-        citizen = User.query.get(grievance.user_id)
         if citizen:
             EmailService.send_status_update_notification(
                 user_email=citizen.email,
@@ -623,6 +683,13 @@ def add_comment(grievance_id):
             # Notify citizen
             citizen = User.query.get(grievance.user_id)
             if citizen:
+                NotificationService.queue_notification(
+                    user_id=citizen.id,
+                    title=f'Officer replied on Grievance #{grievance_id}',
+                    message=f'{user.name} replied: "{comment_text[:100]}"',
+                    notification_type='comment_reply',
+                    related_grievance_id=grievance_id,
+                )
                 pending_email_jobs.append((
                     EmailService.send_officer_reply_alert,
                     {

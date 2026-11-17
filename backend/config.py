@@ -66,6 +66,16 @@ class Config:
         cls.MODEL_PATH = os.path.join(project_root, 'ml', 'artifacts', 'model.joblib')
         cls.VECTORIZER_PATH = os.path.join(project_root, 'ml', 'artifacts', 'vectorizer.joblib')
         cls.MODEL_METADATA_PATH = os.path.join(project_root, 'ml', 'artifacts', 'train_metadata.json')
+        cls.VISION_MODEL_DIR = os.path.join(project_root, 'ml', 'artifacts', 'vision')
+        cls.VISION_ISSUE_MODEL_PATH = os.path.join(cls.VISION_MODEL_DIR, 'issue_classifier.onnx')
+        cls.VISION_AI_MODEL_PATH = os.path.join(cls.VISION_MODEL_DIR, 'ai_image_detector.onnx')
+        cls.ENABLE_VISION_ANALYSIS = cls._env_bool('ENABLE_VISION_ANALYSIS', 'true')
+        cls.VISION_AI_FLAG_THRESHOLD = float(
+            os.environ.get('VISION_AI_FLAG_THRESHOLD', '0.80')
+        )
+        cls.VISION_ISSUE_CONFIDENCE_THRESHOLD = float(
+            os.environ.get('VISION_ISSUE_CONFIDENCE_THRESHOLD', '0.60')
+        )
         cls.ENABLE_STARTUP_MODEL_LOAD = cls._env_bool('ENABLE_STARTUP_MODEL_LOAD', 'true')
         cls.ENABLE_SCHEDULER = cls._env_bool('ENABLE_SCHEDULER', 'true')
         cls.SCHEDULER_AUTOSTART = cls._env_bool('SCHEDULER_AUTOSTART', 'false')

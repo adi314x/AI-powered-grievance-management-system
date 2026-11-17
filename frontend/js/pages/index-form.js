@@ -207,6 +207,18 @@
                 submitMessage += ' This case has been routed for manual triage review.';
             }
             notify(submitMessage, 'success');
+
+            const imageAnalysis = response.image_analysis;
+            if (imageAnalysis && imageAnalysis.available) {
+                const issueLabel = imageAnalysis.issue_display || imageAnalysis.issue_type || 'N/A';
+                const issueConfidence = Number(imageAnalysis.issue_confidence_pct || 0).toFixed(1);
+                let imageMessage = `Image check: ${issueLabel} (${issueConfidence}% confidence).`;
+                if (imageAnalysis.ai_generated) {
+                    imageMessage += ' Warning: this image may be AI-generated.';
+                }
+                notify(imageMessage, imageAnalysis.ai_generated ? 'warning' : 'info');
+            }
+
             const form = document.getElementById('grievanceForm');
             if (form) {
                 form.reset();

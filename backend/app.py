@@ -30,6 +30,7 @@ from backend.routes.admin import admin_bp
 from backend.routes.addons import addons_bp
 from backend.routes.rag import rag_bp
 from backend.services.classifier import classifier
+from backend.services.image_ai_service import image_ai_service
 from backend.services.scheduler import scheduler
 from backend.security import SecurityHeaders, configure_cors_security
 
@@ -88,6 +89,7 @@ def create_app():
             db_status['error'] = str(exc)
 
         model_status = classifier.get_runtime_status()
+        vision_status = image_ai_service.status()
         scheduler_status = scheduler.get_runtime_status()
 
         status = 'healthy'
@@ -110,6 +112,11 @@ def create_app():
                 'model_loaded': model_status.get('model_loaded'),
                 'loaded_at_utc': model_status.get('loaded_at_utc'),
             },
+            'vision': {
+                'enabled': vision_status.get('enabled'),
+                'available': vision_status.get('available'),
+                'reason': vision_status.get('reason'),
+            },
             'scheduler': scheduler_status,
         }, status_code
     
@@ -129,7 +136,17 @@ def create_app():
         # Load ML classifier
         if app.config['ENABLE_STARTUP_MODEL_LOAD']:
             classifier.load_model()
-        
+
+            vision_status = image_ai_service.status()
+            if vision_status.get('available'):
+                print("[OK] Vision models loaded (issue classifier + AI-image detector)")
+            elif vision_status.get('enabled'):
+                print(f"[WARN] Vision analysis unavailable: {vision_status.get('reason')}")
+            else:
+                print("[INFO] Vision analysis is disabled by configuration")
+        else:
+            print("[INFO] Startup model loading disabled; vision models will load on first request")
+
         print("[SECURITY] Security Firewall: ENABLED")
         print("   - Rate Limiting: Active")
         print("   - Input Validation: Active")

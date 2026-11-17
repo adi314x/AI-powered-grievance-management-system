@@ -5,11 +5,17 @@ from io import BytesIO
 import json
 import qrcode
 from sqlalchemy import func
+from backend.config import Config
 from backend.models import Grievance, User
 from backend.models_addons import AuditLog, GrievanceRating
 from backend.extensions import db
 from backend.services.audit_service import log_audit
 from backend.services.email_service import EmailService
+from backend.services.metrics import (
+    RESOLUTION_STATUSES,
+    resolution_timestamp_expression,
+    resolution_timestamp_subquery,
+)
 from backend.routes.auth import get_current_user_from_token
 from backend.utils.roles import canonical_role
 
@@ -48,7 +54,7 @@ def public_stats():
     """Public dashboard - aggregated stats (no auth required)"""
     try:
         total = Grievance.query.count()
-        resolved = Grievance.query.filter(Grievance.status.in_(['Resolved', 'Closed'])).count()
+        resolved = Grievance.query.filter(Grievance.status.in_(RESOLUTION_STATUSES)).count()
         pending = total - resolved
         dept_counts = db.session.query(
             Grievance.assigned_department,
@@ -60,15 +66,31 @@ def public_stats():
                 by_dept_map[d] = c
             elif d == Config.ML_MANUAL_REVIEW_DEPARTMENT and c > 0:
                 by_dept_map[d] = c
-        
-        # Avg resolution time (days) for resolved grievances
-        resolved_grievances = Grievance.query.filter(
-            Grievance.status.in_(['Resolved', 'Closed']),
-            Grievance.created_at.isnot(None),
-            Grievance.updated_at.isnot(None)
-        ).all()
-        total_days = sum((g.updated_at - g.created_at).total_seconds() / 86400 for g in resolved_grievances)
-        avg_resolution_days = round(total_days / len(resolved_grievances), 1) if resolved_grievances else 0
+
+        # Avg resolution time (days) using the actual resolution update timestamp.
+        resolution_subquery = resolution_timestamp_subquery()
+        resolved_at = resolution_timestamp_expression(resolution_subquery)
+        resolution_rows = (
+            db.session.query(
+                Grievance.created_at,
+                resolved_at.label('resolved_at'),
+            )
+            .outerjoin(
+                resolution_subquery,
+                resolution_subquery.c.grievance_id == Grievance.id,
+            )
+            .filter(
+                Grievance.status.in_(RESOLUTION_STATUSES),
+                Grievance.created_at.isnot(None),
+            )
+            .all()
+        )
+        resolution_days = [
+            (row.resolved_at - row.created_at).total_seconds() / 86400
+            for row in resolution_rows
+            if row.resolved_at and row.created_at
+        ]
+        avg_resolution_days = round(sum(resolution_days) / len(resolution_days), 1) if resolution_days else 0
         
         return jsonify({
             'total_grievances': total,
@@ -93,15 +115,25 @@ def public_resolved_cases():
             limit = 6
         limit = max(1, min(limit, 12))
 
-        grievances = Grievance.query.filter(
-            Grievance.status.in_(['Resolved', 'Closed'])
-        ).order_by(
-            Grievance.updated_at.desc(),
-            Grievance.id.desc()
-        ).limit(limit).all()
+        resolution_subquery = resolution_timestamp_subquery()
+        resolved_at = resolution_timestamp_expression(resolution_subquery)
+        resolved_cases = (
+            db.session.query(
+                Grievance,
+                resolved_at.label('resolved_at'),
+            )
+            .outerjoin(
+                resolution_subquery,
+                resolution_subquery.c.grievance_id == Grievance.id,
+            )
+            .filter(Grievance.status.in_(RESOLUTION_STATUSES))
+            .order_by(resolved_at.desc(), Grievance.id.desc())
+            .limit(limit)
+            .all()
+        )
 
         cases = []
-        for grievance in grievances:
+        for grievance, resolved_at_value in resolved_cases:
             department = grievance.assigned_department or 'General'
             cases.append({
                 'id': grievance.id,
@@ -110,7 +142,7 @@ def public_resolved_cases():
                 'department': department,
                 'location': _anonymize_public_location(grievance.location),
                 'status': grievance.status,
-                'resolved_at': grievance.updated_at.isoformat() if grievance.updated_at else None,
+                'resolved_at': resolved_at_value.isoformat() if resolved_at_value else None,
             })
 
         return jsonify({
@@ -130,13 +162,32 @@ def submit_rating(grievance_id):
         if auth_response:
             return auth_response
         
-        data = request.get_json()
-        rating = data.get('rating', 0)
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({'error': 'Request body must be a JSON object'}), 400
+
+        rating = data.get('rating')
+        if isinstance(rating, bool) or not isinstance(rating, int) or not 1 <= rating <= 5:
+            return jsonify({'error': 'Rating must be an integer between 1 and 5'}), 400
+
         feedback_text = data.get('feedback_text', '')
-        
-        if not 1 <= rating <= 5:
-            return jsonify({'error': 'Rating must be 1-5'}), 400
-        
+        if feedback_text is None:
+            feedback_text = ''
+        if not isinstance(feedback_text, str):
+            return jsonify({'error': 'feedback_text must be a string'}), 400
+        if len(feedback_text) > 1000:
+            return jsonify({'error': 'feedback_text must be at most 1000 characters'}), 400
+
+        optional_scores = {}
+        for field in ('resolution_speed', 'officer_helpfulness'):
+            value = data.get(field)
+            if value is None:
+                optional_scores[field] = None
+            elif isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 5:
+                return jsonify({'error': f'{field} must be an integer between 1 and 5'}), 400
+            else:
+                optional_scores[field] = value
+
         grievance = Grievance.query.get(grievance_id)
         if not grievance:
             return jsonify({'error': 'Grievance not found'}), 404
@@ -149,16 +200,16 @@ def submit_rating(grievance_id):
         if existing:
             existing.rating = rating
             existing.feedback_text = feedback_text
-            existing.resolution_speed = data.get('resolution_speed')
-            existing.officer_helpfulness = data.get('officer_helpfulness')
+            existing.resolution_speed = optional_scores['resolution_speed']
+            existing.officer_helpfulness = optional_scores['officer_helpfulness']
         else:
             r = GrievanceRating(
                 grievance_id=grievance_id,
                 user_id=user.id,
                 rating=rating,
                 feedback_text=feedback_text,
-                resolution_speed=data.get('resolution_speed'),
-                officer_helpfulness=data.get('officer_helpfulness')
+                resolution_speed=optional_scores['resolution_speed'],
+                officer_helpfulness=optional_scores['officer_helpfulness']
             )
             db.session.add(r)
         
@@ -217,7 +268,11 @@ def export_audit():
         if auth_response:
             return auth_response
         
-        days = int(request.args.get('days', 7))
+        try:
+            days = int(request.args.get('days', 7))
+        except (TypeError, ValueError):
+            days = 7
+        days = max(1, min(days, 365))
         since = datetime.utcnow() - timedelta(days=days)
         logs = AuditLog.query.filter(AuditLog.created_at >= since).order_by(AuditLog.created_at.desc()).limit(5000).all()
         

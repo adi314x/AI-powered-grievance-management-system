@@ -24,6 +24,8 @@ A hardened, role-based platform that provides:
 - **For Officers**: Streamlined workflows for investigations, evidence reviews, and fraud reporting.
 - **For Admins**: Observability via system analytics, model monitoring, and account suspension workflows.
 
+> **Presentation guide:** See [PROJECT_GUIDE.md](./PROJECT_GUIDE.md) for the full architecture, workflows, AI/ML explanation, demo walkthrough, and limitations.
+
 ---
 
 ## 🏗️ Architecture & Tech Stack
@@ -60,7 +62,9 @@ graph TD
 ```text
 Citizen → Submit Grievance
         ↓
-ML Classifier → Department Prediction
+Text Classifier → Department Prediction
+        ↓
+Vision Models → Issue Type + AI-Image Flag
         ↓
 Admin (if low confidence fallback)
         ↓
@@ -75,7 +79,7 @@ Resolution → Citizen Notification
 
 ### 🛠️ Tech Stack (Specific)
 - **Backend**: Flask, SQLAlchemy, JWT, Pytz (Timezone handling), Bleach (XSS Sanitization).
-- **ML/AI**: scikit-learn (TF-IDF + Logistic Regression), manual triage fallback.
+- **ML/AI**: scikit-learn (TF-IDF + Logistic Regression) for text routing; ONNX Runtime CNNs for issue-type detection and AI-generated-image screening.
 - **Frontend**: Vanilla JS, Bootstrap 5, Tabler Icons, Chart.js, and a shared responsive design system.
 - **Infra/CI**: Render Dashboard, GitHub Actions CI, PostgreSQL.
 - **Security**: IP-based rate limiting, input validation, SQL injection prevention.
@@ -86,7 +90,7 @@ Resolution → Citizen Notification
 
 1. **Citizen Submission**: Register and submit a grievance. The system automatically predicts the department and applies moderation.
 2. **Automated Triage**: High-confidence cases auto-route to the department; low-confidence cases go to the Admin Triage queue.
-3. **Officer Action**: Assigned officer reviews evidence (including AI fraud scan), updates status, and investigations.
+3. **Officer Action**: Assigned officer reviews evidence, updates status, and can report suspected fraud for admin review. Uploaded images are screened at submission by the ONNX issue classifier and AI-image detector; results appear as supporting evidence on the citizen, officer, and admin views.
 4. **Accountability**: SLA tracking ensures the case remains on schedule; background tasks escalate breached cases.
 5. **Transparency**: Citizen receives email notifications and tracks real-time progress on their personal timeline.
 
@@ -104,6 +108,7 @@ Resolution → Citizen Notification
 - **SLA-Driven Enforcement**: Automated breach detection via background scheduler ensures operational accountability.
 - **Full Fraud Lifecycle**: Officers can flag suspicion; Admins verify via evidence and execute audit-backed suspensions.
 - **Role-Based Security**: Strict backend enforcement of role permissions across all protected API routes.
+- **Evidence-Aware Screening**: Uploaded images are classified (pothole / garbage / other) and checked for AI-generation signatures; flagged cases notify admins without auto-rejecting the citizen.
 - **Isolated Side-Effect Testing**: Deterministic test suite using mocks for Email/Notification services to ensure CI reliability.
 - **Multilingual UI Architecture**: Scalable localization engine supporting dynamic translation across complex workflows.
 
@@ -114,7 +119,8 @@ Resolution → Citizen Notification
 | Feature | Citizen | Officer | Admin |
 |---|:---:|:---:|:---:|
 | **Submit Grievance** (ML Routed) | ✅ | | |
-| **Evidence Upload** (AI Fraud Scan) | ✅ | | |
+| **Evidence Upload** | ✅ | | |
+| **Image Issue & AI-Evidence Screening** | ✅ | ✅ | ✅ |
 | **Real-time Status Timeline** | ✅ | ✅ | ✅ |
 | **Multilingual UI** (EN, HI, TA) | ✅ | ✅ | ✅ |
 | **Advanced Search & Filtering** | | ✅ | ✅ |
@@ -163,7 +169,7 @@ Resolution → Citizen Notification
 - **Content Coverage**: Full conceptual translation coverage is currently highest for English, Hindi, and Tamil; remaining edge-case dialects rely prominently on the translation fallbacks.
 - **ML Specialization**: The classifier is optimized for department routing assistance, not high-granularity sub-category classification.
 - **Session Strategy**: Token storage currently uses `localStorage` for simplicity; production environments should migrate to HttpOnly secure cookies.
-- **Detection Dependency**: AI image fraud detection depends on model confidence thresholds and may require manual verification.
+- **Image Detection**: The AI-image detector is a small demo-grade model trained on CIFAKE at 32×32 resolution. Treat authenticity flags as supporting signals for manual review, not definitive proof.
 
 ---
 
@@ -189,6 +195,17 @@ Resolution → Citizen Notification
    python run.py
    ```
    *Access at: [http://localhost:8000](http://localhost:8000)*
+
+### Verify Vision Models
+
+The exported ONNX models live in `ml/artifacts/vision/` (keep each `.onnx.data`
+file next to its `.onnx` file). Run a quick smoke test on any local image:
+
+```bash
+python ml/analyze_image.py path/to/photo.jpg
+```
+
+The health endpoint also reports vision availability under `vision`.
 
 ### Run Tests
 

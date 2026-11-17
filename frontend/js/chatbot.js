@@ -7,7 +7,9 @@
   'use strict';
 
   // ── Config ───────────────────────────────────────────────
-  const API_URL = '/api/rag/query';
+  const API_URL = (typeof resolveApiUrl === 'function')
+    ? resolveApiUrl('/api/rag/query')
+    : '/api/rag/query';
 
   const SUGGESTIONS = [
     '💧 How to apply for water connection?',

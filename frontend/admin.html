@@ -109,6 +109,7 @@
                     <option value="" data-translate="all_statuses">All Statuses</option>
                     <option value="Received" data-translate="status_received">Received</option>
                     <option value="Assigned to Department" data-translate="status_assigned">Assigned to Department</option>
+                    <option value="Manual Review Required" data-translate="status_manual_review">Manual Review Required</option>
                     <option value="Under Progress" data-translate="status_under_progress">Under Progress</option>
                     <option value="Investigation" data-translate="status_investigation">Investigation</option>
                     <option value="Reviewed" data-translate="status_reviewed">Reviewed</option>
@@ -118,6 +119,7 @@
 
                 <select id="filterDepartment" class="form-select" style="max-width: 200px;">
                     <option value="" data-translate="all_departments">All Departments</option>
+                    <option value="Manual Review Queue">Manual Review Queue</option>
                 </select>
 
                 <button id="applyFiltersBtn" class="btn btn-primary" data-translate="apply_filters">Apply Filters</button>
@@ -321,7 +323,8 @@
             try {
                 const data = await apiCall('/admin/departments');
                 const select = document.getElementById('filterDepartment');
-                
+                window.departmentsData = data.departments || [];
+
                 data.departments.forEach(dept => {
                     const option = document.createElement('option');
                     option.value = dept;
@@ -366,6 +369,7 @@
                                 <span class="grievance-entry-meta">
                                     ${renderStatusBadge(g.status || 'Received')}
                                     <span class="badge badge-progress">${escapeHtml(department)}</span>
+                                    ${g.ai_image_detected ? '<span class="badge investigation">🤖 AI-image flagged</span>' : ''}
                                     <small>${escapeHtml(formatDate(g.created_at))}</small>
                                 </span>
                                 <span class="grievance-entry-preview">${escapeHtml(complaintText)}</span>
@@ -464,6 +468,10 @@
             
             const modal = document.getElementById('detailsModal');
             const content = document.getElementById('detailsContent');
+            const isManualTriage = !!(
+                grievance.requires_manual_triage
+                || grievance.assigned_department === 'Manual Review Queue'
+            );
             
             content.innerHTML = `
                 <div style="max-height: 70vh; overflow-y: auto; padding: 1rem;">
@@ -480,6 +488,19 @@
                             <span style="font-size: 0.875rem;">📅 ${formatDate(grievance.created_at)}</span>
                         </div>
                     </div>
+
+                    ${isManualTriage ? `
+                        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+                            <div style="font-weight: 600; color: #92400E; margin-bottom: 0.35rem;">Manual triage required</div>
+                            <div style="color: #78350F; line-height: 1.5;">
+                                ${escapeHtml(grievance.triage_reason || 'Model confidence was below the auto-assign threshold.')}
+                            </div>
+                            <div style="color: #78350F; margin-top: 0.35rem; font-size: 0.9rem;">
+                                Predicted department: ${escapeHtml(grievance.predicted_department || 'Unknown')}
+                                | Confidence: ${(Number(grievance.prediction_confidence || 0) * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                    ` : ''}
                     
                     <!-- Complainant Information -->
                     <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -552,8 +573,13 @@
                         <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
                             <p style="color: #92400E; margin: 0 0 0.75rem 0; font-weight: 600;">⚠️ No officer assigned to this complaint yet</p>
                             <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                                ${isManualTriage ? `
+                                    <select id="assignDepartmentSelect" class="form-select" style="max-width: 240px;">
+                                        <option value="">Select department...</option>
+                                    </select>
+                                ` : ''}
                                 <select id="assignOfficerSelect" class="form-select" style="max-width: 280px;">
-                                    <option value="">Select officer from ${grievance.assigned_department}...</option>
+                                    <option value="">${isManualTriage ? 'Select department first...' : 'Select officer from ' + grievance.assigned_department + '...'}</option>
                                 </select>
                                 <button onclick="assignOfficerToGrievance(${grievance.id})" class="btn btn-primary" style="padding: 0.5rem 1rem;">Assign Officer</button>
                             </div>
@@ -585,6 +611,30 @@
                                 </div>
                             </div>
                         ` : ''}
+                        ${grievance.ai_detection_details ? `
+                            <div style="margin-top: 1rem; padding: 1rem; background: ${grievance.ai_detection_details.ai_generated ? '#FEF2F2' : '#F0FDF4'}; border: 1px solid ${grievance.ai_detection_details.ai_generated ? '#FECACA' : '#BBF7D0'}; border-radius: 8px;">
+                                <div style="font-size: 0.75rem; color: #374151; font-weight: 700; margin-bottom: 0.5rem;">🤖 AI Evidence Analysis</div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; color: #374151;">
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Detected issue</small>
+                                        <strong>${escapeHtml(grievance.ai_detection_details.issue_display || grievance.ai_detection_details.issue_type || 'N/A')}</strong>
+                                    </div>
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Issue confidence</small>
+                                        <strong>${Number(grievance.ai_detection_details.issue_confidence_pct || 0).toFixed(1)}%</strong>
+                                    </div>
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Authenticity</small>
+                                        <strong style="color: ${grievance.ai_detection_details.ai_generated ? '#B91C1C' : '#047857'};">
+                                            ${grievance.ai_detection_details.ai_generated ? '⚠️ Possible AI-generated' : '✅ No AI-image flag'}
+                                        </strong>
+                                    </div>
+                                </div>
+                                <small style="color: #6B7280; display: block; margin-top: 0.5rem;">
+                                    ${escapeHtml(grievance.ai_detection_details.recommendation || 'Supporting evidence only.')}
+                                </small>
+                            </div>
+                        ` : ''}
                     </div>
                     
                     <div style="display: flex; gap: 1rem; justify-content: flex-end;">
@@ -596,15 +646,42 @@
             
             modal.style.display = 'block';
             
-            // Populate assign officer dropdown if no officer assigned
-            if (!grievance.assigned_officer && window.officersData) {
-                const select = document.getElementById('assignOfficerSelect');
-                if (select) {
-                    const deptOfficers = window.officersData.filter(o => o.department === grievance.assigned_department);
-                    select.innerHTML = '<option value="">Select officer...</option>' + 
-                        deptOfficers.map(o => `<option value="${o.id}">${o.name} (${o.designation || 'Officer'})</option>`).join('');
+            // Populate assignment controls if no officer is assigned yet.
+            if (!grievance.assigned_officer) {
+                if (isManualTriage) {
+                    populateManualTriageAssignments(grievance);
+                } else {
+                    populateAssignOfficerOptions(grievance.assigned_department);
                 }
             }
+        }
+
+        function populateAssignOfficerOptions(department) {
+            const select = document.getElementById('assignOfficerSelect');
+            if (!select) return;
+            const deptOfficers = (window.officersData || []).filter(o => o.department === department);
+            select.innerHTML = '<option value="">Select officer...</option>' +
+                deptOfficers.map(o => `<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.designation || 'Officer')})</option>`).join('');
+        }
+
+        function populateManualTriageAssignments(grievance) {
+            const departmentSelect = document.getElementById('assignDepartmentSelect');
+            if (!departmentSelect) return;
+
+            const departments = (window.departmentsData && window.departmentsData.length)
+                ? window.departmentsData
+                : [grievance.predicted_department].filter(Boolean);
+            const predicted = departments.includes(grievance.predicted_department)
+                ? grievance.predicted_department
+                : (departments[0] || '');
+
+            departmentSelect.innerHTML = '<option value="">Select department...</option>' +
+                departments.map(dept => `<option value="${escapeHtml(dept)}">${escapeHtml(dept)}</option>`).join('');
+            departmentSelect.value = predicted;
+            departmentSelect.addEventListener('change', () => {
+                populateAssignOfficerOptions(departmentSelect.value);
+            });
+            populateAssignOfficerOptions(predicted);
         }
         
         async function assignOfficerToGrievance(grievanceId) {

@@ -45,6 +45,7 @@ Role model:
 Submission path:
 1. Citizen submits complaint text + location + images.
 2. Classifier predicts department and confidence.
+2b. Vision service classifies evidence images and checks for AI-generation signals (supporting evidence only).
 3. Routing decision:
    - confidence >= threshold -> auto department assignment
    - confidence < threshold / model unavailable -> manual triage queue
@@ -57,14 +58,29 @@ Submission path:
 
 ## 5. Content Moderation & Trust Layer
 
-All citizen inputs (complaint text, comments) pass through a server-side trust layer:
-- **Keyword Moderation**: Detects threats, abuse, or personal attacks using `ContentModerator`.
-- **Severity Scoring**: High-severity violations (score >= 30) block submission; medium-severity flags for officer review.
-- **AI Image Detection**: Evidence photos are scanned for AI-generation signatures (Anti-fraud measure).
+Complaint text submitted by citizens passes through server-side validation and
+the content-moderation service:
+- **Keyword Moderation**: Detects configured threat, abuse, hate-speech, or
+  personal-attack terms/patterns using `ContentModerator`. This is
+  rule-based—not a trained moderation model.
+- **Severity Scoring**: Scores of 30 or higher block submission. Lower-risk
+  flagged content can generate an admin review notification.
+- **Image Evidence Analysis**: At submission, `backend/services/image_ai_service.py`
+  runs two ONNX models from `ml/artifacts/vision`:
+  - `issue_classifier.onnx` — pothole / garbage / other
+  - `ai_image_detector.onnx` — real / fake (CIFAKE, 32×32)
+  Results are stored in `ai_detection_details`; a fake score at or above
+  `VISION_AI_FLAG_THRESHOLD` (default `0.80`) sets `ai_image_detected` /
+  `is_flagged` and notifies admins. Department suggestions require issue
+  confidence at or above `VISION_ISSUE_CONFIDENCE_THRESHOLD` (default `0.60`).
+  Text routing remains authoritative, and no case is auto-rejected from an
+  image score alone.
+- **Legacy Image Heuristics**: `AIImageDetector` metadata/EXIF checks remain
+  available for auxiliary analysis but are not required for the live flow.
 
 ## 6. Fraud Lifecycle Management
 
-1. **Detection**: Officers can flag suspicious grievances as "Suspected Fraud."
+1. **Reporting**: Officers can report a grievance they suspect is fraudulent.
 2. **Review**: Admins review the fraud report and evidence.
 3. **Resolution**:
    - **Verified**: Grievance is closed as "Fraud," and the user account is suspended.
@@ -77,13 +93,20 @@ Comment escalation:
 
 ## 5. ML Pipeline
 
-Artifacts:
+Text artifacts:
 - model: `ml/artifacts/model.joblib`
 - vectorizer: `ml/artifacts/vectorizer.joblib`
 - metadata: `ml/artifacts/train_metadata.json`
 
+Vision artifacts:
+- issue classifier: `ml/artifacts/vision/issue_classifier.onnx` (+ `.onnx.data`)
+- AI-image detector: `ml/artifacts/vision/ai_image_detector.onnx` (+ `.onnx.data`)
+- preprocessing/labels: matching `*_preprocess.json` / `*_labels.json`
+
 Capabilities:
 - Predict department with confidence and top candidates.
+- Analyze uploaded evidence images with ONNX Runtime (CPU), without loading
+  PyTorch in the Flask process.
 - Expose runtime/model status via admin endpoint.
 - Log department corrections for retraining feedback loop.
 - Support manual retrain trigger + optional scheduled retraining.

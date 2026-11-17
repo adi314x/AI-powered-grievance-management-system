@@ -389,7 +389,10 @@
                                                 <small style="color: #6B7280;">${g.assigned_officer.designation || 'Officer'}</small>
                                             ` : '<span style="color: #9CA3AF;">Not Assigned</span>'}
                                         </td>
-                                        <td>${renderStatusBadge(g.status)}</td>
+                                        <td>
+                                            ${renderStatusBadge(g.status)}
+                                            ${g.ai_image_detected ? '<span class="badge investigation">🤖 AI-image flagged</span>' : ''}
+                                        </td>
                                         <td><small>${formatDate(g.created_at)}</small></td>
                                         <td>
                                             <button onclick="showGrievanceDetails(${g.id})" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem; margin-right: 0.5rem;">
@@ -595,6 +598,30 @@
                                             onclick="window.open('${img}', '_blank')">
                                     `).join('')}
                                 </div>
+                            </div>
+                        ` : ''}
+                        ${grievance.ai_detection_details ? `
+                            <div style="margin-top: 1rem; padding: 1rem; background: ${grievance.ai_detection_details.ai_generated ? '#FEF2F2' : '#F0FDF4'}; border: 1px solid ${grievance.ai_detection_details.ai_generated ? '#FECACA' : '#BBF7D0'}; border-radius: 8px;">
+                                <div style="font-size: 0.75rem; color: #374151; font-weight: 700; margin-bottom: 0.5rem;">🤖 AI Evidence Analysis</div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; color: #374151;">
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Detected issue</small>
+                                        <strong>${escapeHtml(grievance.ai_detection_details.issue_display || grievance.ai_detection_details.issue_type || 'N/A')}</strong>
+                                    </div>
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Issue confidence</small>
+                                        <strong>${Number(grievance.ai_detection_details.issue_confidence_pct || 0).toFixed(1)}%</strong>
+                                    </div>
+                                    <div>
+                                        <small style="color: #6B7280; display: block;">Authenticity</small>
+                                        <strong style="color: ${grievance.ai_detection_details.ai_generated ? '#B91C1C' : '#047857'};">
+                                            ${grievance.ai_detection_details.ai_generated ? '⚠️ Possible AI-generated' : '✅ No AI-image flag'}
+                                        </strong>
+                                    </div>
+                                </div>
+                                <small style="color: #6B7280; display: block; margin-top: 0.5rem;">
+                                    ${escapeHtml(grievance.ai_detection_details.recommendation || 'Supporting evidence only.')}
+                                </small>
                             </div>
                         ` : ''}
                     </div>

@@ -4,16 +4,52 @@ Background Scheduler for periodic tasks
 - SLA breach scan: every hour
 - ML model retraining: every 7 days (configurable)
 """
+import json
 import os
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from backend.config import Config
 from backend.services.comment_escalation import check_and_escalate_comments
 from backend.services.model_retrain import retrain_model
 
 # Retrain every N hours (168 = 7 days). Set RETRAIN_INTERVAL_HOURS=24 for daily.
 RETRAIN_INTERVAL_HOURS = int(os.environ.get('RETRAIN_INTERVAL_HOURS', '168'))
+
+
+def _parse_metadata_timestamp(value):
+    """Parse a metadata timestamp into a naive UTC datetime."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+    return parsed
+
+
+def _should_retrain(now=None):
+    """Return True when persisted training metadata is older than the interval."""
+    if not Config.ENABLE_SCHEDULED_RETRAIN:
+        return False
+
+    try:
+        with open(Config.MODEL_METADATA_PATH, 'r', encoding='utf-8') as metadata_file:
+            metadata = json.load(metadata_file)
+    except (OSError, ValueError, TypeError):
+        return False
+
+    if not isinstance(metadata, dict):
+        return False
+
+    trained_at = _parse_metadata_timestamp(metadata.get('trained_at_utc'))
+    if trained_at is None:
+        return False
+
+    now = now or datetime.utcnow()
+    return (now - trained_at) >= timedelta(hours=RETRAIN_INTERVAL_HOURS)
 
 
 def scan_sla_breaches(app=None):
@@ -97,7 +133,6 @@ class BackgroundScheduler:
         self.app = app
         self.running = False
         self.thread = None
-        self._hours_since_retrain = 0
     
     def init_app(self, app):
         """Initialize with Flask app context"""
@@ -124,50 +159,49 @@ class BackgroundScheduler:
         if self.thread:
             self.thread.join(timeout=5)
     
+    def _run_once(self):
+        """Run one cycle of all scheduled tasks."""
+        if not self.app:
+            return
+
+        with self.app.app_context():
+            # Comment escalation (every hour)
+            print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running comment escalation check...")
+            escalated_count = check_and_escalate_comments()
+            if escalated_count > 0:
+                print(f"✓ Escalated {escalated_count} overdue comments")
+            else:
+                print("✓ No comments need escalation")
+
+            # SLA breach scan (every hour)
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running SLA breach scan...")
+            breached_count = scan_sla_breaches()
+            if breached_count > 0:
+                print(f"✓ Marked {breached_count} grievances as SLA-breached")
+            else:
+                print("✓ No new SLA breaches")
+
+            # Model retraining (persisted cadence via train_metadata.json)
+            if _should_retrain():
+                print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running scheduled ML model retraining...")
+                success, msg = retrain_model(trigger='scheduler')
+                if success:
+                    print(f"✓ {msg}")
+                else:
+                    print(f"❌ Retrain failed: {msg}")
+
     def _run_scheduler(self):
-        """Main scheduler loop - runs every hour"""
+        """Main scheduler loop - runs immediately, then every hour."""
         while self.running:
             try:
-                # Wait for 1 hour (3600 seconds)
-                time.sleep(3600)
-                
-                if not self.running:
-                    break
-                
-                if not self.app:
-                    continue
-                
-                with self.app.app_context():
-                    # Comment escalation (every hour)
-                    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running comment escalation check...")
-                    escalated_count = check_and_escalate_comments()
-                    if escalated_count > 0:
-                        print(f"✓ Escalated {escalated_count} overdue comments")
-                    else:
-                        print("✓ No comments need escalation")
-
-                    # SLA breach scan (every hour)
-                    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running SLA breach scan...")
-                    breached_count = scan_sla_breaches()
-                    if breached_count > 0:
-                        print(f"✓ Marked {breached_count} grievances as SLA-breached")
-                    else:
-                        print("✓ No new SLA breaches")
-                    
-                    # Model retraining (every RETRAIN_INTERVAL_HOURS)
-                    self._hours_since_retrain += 1
-                    if Config.ENABLE_SCHEDULED_RETRAIN and self._hours_since_retrain >= RETRAIN_INTERVAL_HOURS:
-                        self._hours_since_retrain = 0
-                        print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running scheduled ML model retraining...")
-                        success, msg = retrain_model(trigger='scheduler')
-                        if success:
-                            print(f"✓ {msg}")
-                        else:
-                            print(f"❌ Retrain failed: {msg}")
-                
+                self._run_once()
             except Exception as e:
                 print(f"❌ Scheduler error: {e}")
-                continue
+
+            if not self.running:
+                break
+
+            time.sleep(3600)
 
     def get_runtime_status(self):
         """Expose scheduler runtime state for health and diagnostics."""

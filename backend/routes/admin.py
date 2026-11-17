@@ -9,7 +9,13 @@ from backend.routes.auth import get_current_user_from_token
 from backend.services.email_service import EmailService
 from backend.services.notification_service import NotificationService
 from backend.services.fraud_service import review_fraud_report as apply_fraud_review
+from backend.services.metrics import (
+    RESOLUTION_STATUSES,
+    resolution_timestamp_expression,
+    resolution_timestamp_subquery,
+)
 from backend.services.model_retrain import retrain_model, get_retrain_status
+from backend.services.image_ai_service import image_ai_service
 from backend.security import SecurityFirewall
 from backend.utils.validation import ValidationError, normalize_phone, validate_name
 from backend.utils.roles import OFFICER_ROLE_VALUES, is_role
@@ -173,23 +179,35 @@ def get_analytics():
             elif dept == Config.ML_MANUAL_REVIEW_DEPARTMENT and count > 0:
                 counts_by_department[dept] = count
         
-        # Calculate average resolution time for closed/resolved grievances
-        resolved_grievances = Grievance.query.filter(
-            Grievance.status.in_(['Resolved', 'Closed'])
-        ).all()
-        
-        total_resolution_time = 0
+        # Calculate average resolution time using the actual resolution update timestamp.
+        resolution_subquery = resolution_timestamp_subquery()
+        resolved_at = resolution_timestamp_expression(resolution_subquery)
+        resolution_rows = (
+            db.session.query(
+                Grievance.created_at,
+                resolved_at.label('resolved_at'),
+            )
+            .outerjoin(
+                resolution_subquery,
+                resolution_subquery.c.grievance_id == Grievance.id,
+            )
+            .filter(
+                Grievance.status.in_(RESOLUTION_STATUSES),
+                Grievance.created_at.isnot(None),
+            )
+            .all()
+        )
+
+        total_resolution_seconds = 0.0
         resolved_count = 0
-        
-        for grievance in resolved_grievances:
-            if grievance.created_at and grievance.updated_at:
-                resolution_time = (grievance.updated_at - grievance.created_at).total_seconds()
-                total_resolution_time += resolution_time
+        for row in resolution_rows:
+            if row.created_at and row.resolved_at:
+                total_resolution_seconds += (row.resolved_at - row.created_at).total_seconds()
                 resolved_count += 1
-        
+
         avg_resolution_time_days = 0
         if resolved_count > 0:
-            avg_resolution_time_seconds = total_resolution_time / resolved_count
+            avg_resolution_time_seconds = total_resolution_seconds / resolved_count
             avg_resolution_time_days = round(avg_resolution_time_seconds / (24 * 3600), 2)
         
         # Total counts
@@ -614,6 +632,7 @@ def get_model_status():
             'recommended_minimum_accuracy': 0.75,
             'note': quality_note,
         }
+        status['vision'] = image_ai_service.status()
 
         return jsonify(status), 200
     except Exception as e:
