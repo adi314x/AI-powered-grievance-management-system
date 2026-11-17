@@ -218,9 +218,6 @@ python -m pytest -q
 > [!WARNING]
 > **Demo Credentials**: `admin123` / `officer123` / `citizen123` are for local development only. Do not use in production.
 
-> [!NOTE]
-> **Live Demo**: The [GitHub Pages demo](https://santhakumarramesh.github.io/smart-grievance-system/) is a frontend-mirrored static site. Real interactivity requires the Render API infrastructure to successfully respond to client requests.
-
 ---
 
 ## 💼 Interview Toolkit
